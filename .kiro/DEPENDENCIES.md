@@ -15,42 +15,56 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # Estado
-  flutter_riverpod: ^2.4.0
-  riverpod_annotation: ^2.3.0
+  # Estado y Arquitectura
+  flutter_riverpod: ^2.5.1
 
-  # Almacenamiento local
+  # Almacenamiento Local
   hive: ^2.2.3
   hive_flutter: ^1.1.0
 
-  # UI Components
-  table_calendar: ^3.0.9
-  fl_chart: ^0.65.0
-  intl: ^0.18.1
-
+  # UI Moderna y Animaciones
+  animate_do: ^3.3.4
+  flutter_animate: ^4.5.0
+  shimmer: ^3.0.0
+  flutter_staggered_animations: ^1.1.1
+  
+  # Componentes UI Premium
+  google_fonts: ^6.2.1
+  flutter_slidable: ^3.1.0
+  flutter_speed_dial: ^7.0.0
+  badges: ^3.1.2
+  
+  # Calendario y Gráficos
+  table_calendar: ^3.1.2
+  fl_chart: ^0.68.0
+  syncfusion_flutter_charts: ^26.2.14
+  
   # Notificaciones
-  flutter_local_notifications: ^16.3.0
-  timezone: ^0.9.2
+  flutter_local_notifications: ^17.2.3
+  timezone: ^0.9.4
 
   # Utilidades
-  uuid: ^4.2.2
+  uuid: ^4.5.1
   equatable: ^2.0.5
-
-  # Iconos
-  cupertino_icons: ^1.0.6
+  intl: ^0.19.0
+  
+  # Iconos Premium
+  cupertino_icons: ^1.0.8
+  iconsax: ^0.0.8
+  phosphor_flutter: ^2.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
-
-  # Code generation
-  build_runner: ^2.4.7
-  hive_generator: ^2.0.1
-  riverpod_generator: ^2.3.0
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.12
 
 flutter:
   uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/icons/
 ```
 
 ---
