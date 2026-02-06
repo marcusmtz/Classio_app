@@ -8,7 +8,9 @@ import '../../../core/constants/app_sizes.dart';
 import '../../../data/models/evaluation_model.dart';
 import '../../providers/evaluations_provider.dart';
 import '../../providers/courses_provider.dart';
+import '../../providers/critical_week_provider.dart';
 import '../evaluations/evaluation_detail_screen.dart';
+import 'widgets/critical_week_detail_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -17,6 +19,7 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pendingEvaluations = ref.watch(pendingEvaluationsProvider);
     final courses = ref.watch(activeCoursesProvider);
+    final criticalWeekInfo = ref.watch(criticalWeekProvider);
 
     final now = DateTime.now();
     final todayEvaluations = pendingEvaluations.where((e) {
@@ -24,13 +27,6 @@ class HomeScreen extends ConsumerWidget {
           e.dueDate.month == now.month &&
           e.dueDate.day == now.day;
     }).toList();
-
-    final thisWeekEvaluations = pendingEvaluations.where((e) {
-      final diff = e.dueDate.difference(now).inDays;
-      return diff >= 0 && diff <= 7;
-    }).toList();
-
-    final isCriticalWeek = thisWeekEvaluations.length >= 3;
 
     return Scaffold(
       body: SafeArea(
@@ -40,7 +36,7 @@ class HomeScreen extends ConsumerWidget {
             SliverToBoxAdapter(child: _buildHeader(context)),
 
             // Critical Week Banner
-            if (isCriticalWeek)
+            if (criticalWeekInfo.isCritical)
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -48,7 +44,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   child: _buildCriticalWeekBanner(
                     context,
-                    thisWeekEvaluations.length,
+                    criticalWeekInfo,
                   )
                       .animate()
                       .fadeIn(duration: 400.ms)
@@ -80,7 +76,7 @@ class HomeScreen extends ConsumerWidget {
                   _buildQuickStats(
                     context,
                     pendingEvaluations.length,
-                    thisWeekEvaluations.length,
+                    criticalWeekInfo.totalEvaluations,
                   ).animate(delay: 200.ms).fadeIn(duration: 400.ms),
                   if (todayEvaluations.isNotEmpty) ...[
                     const SizedBox(height: AppSizes.spacing24),
@@ -134,55 +130,71 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildCriticalWeekBanner(BuildContext context, int count) {
-    return Container(
-      padding: const EdgeInsets.all(AppSizes.spacing16),
-      margin: const EdgeInsets.only(bottom: AppSizes.spacing16),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+  Widget _buildCriticalWeekBanner(BuildContext context, CriticalWeekInfo info) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CriticalWeekDetailScreen(info: info),
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+      child: Container(
+        padding: const EdgeInsets.all(AppSizes.spacing16),
+        margin: const EdgeInsets.only(bottom: AppSizes.spacing16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
         ),
-        borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(AppSizes.spacing8),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppSizes.spacing8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+              ),
+              child: const Icon(
+                Iconsax.warning_2,
+                color: Colors.white,
+                size: AppSizes.iconMedium,
+              ),
             ),
-            child: const Icon(
-              Iconsax.warning_2,
+            const SizedBox(width: AppSizes.spacing12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '¡Semana Crítica!',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(height: AppSizes.spacing4),
+                  Text(
+                    info.message,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.9),
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Iconsax.arrow_right_3,
               color: Colors.white,
-              size: AppSizes.iconMedium,
+              size: AppSizes.iconSmall,
             ),
-          ),
-          const SizedBox(width: AppSizes.spacing12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '¡Semana Crítica!',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: AppSizes.spacing4),
-                Text(
-                  'Tienes $count evaluaciones esta semana',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.9),
-                      ),
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

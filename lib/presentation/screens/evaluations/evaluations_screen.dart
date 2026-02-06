@@ -3,12 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:badges/badges.dart' as badges;
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../providers/evaluations_provider.dart';
+import '../../providers/evaluation_filters_provider.dart';
+import '../../providers/critical_week_provider.dart';
 import '../../../data/models/evaluation_model.dart';
 import 'evaluation_form_screen.dart';
 import 'widgets/evaluation_card.dart';
+import 'widgets/evaluation_filters_sheet.dart';
 
 class EvaluationsScreen extends ConsumerStatefulWidget {
   const EvaluationsScreen({super.key});
@@ -38,13 +42,34 @@ class _EvaluationsScreenState extends ConsumerState<EvaluationsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final pendingEvaluations = ref.watch(pendingEvaluationsProvider);
     final allEvaluations = ref.watch(evaluationsProvider);
+    final filteredEvaluations = ref.watch(filteredEvaluationsProvider);
+    final filters = ref.watch(evaluationFiltersProvider);
+    final hasFilters = filters.hasActiveFilters;
+
+    // Usar evaluaciones filtradas solo en la vista de lista
+    final listEvaluations = hasFilters
+        ? filteredEvaluations
+        : ref.watch(pendingEvaluationsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text(AppStrings.evaluations),
+        actions: [
+          badges.Badge(
+            showBadge: hasFilters,
+            badgeContent: Text(
+              '${filters.activeFilterCount}',
+              style: const TextStyle(color: Colors.white, fontSize: 10),
+            ),
+            child: IconButton(
+              icon: const Icon(Iconsax.filter),
+              onPressed: () => _showFilters(context),
+              tooltip: 'Filtros',
+            ),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -57,7 +82,7 @@ class _EvaluationsScreenState extends ConsumerState<EvaluationsScreen>
         controller: _tabController,
         children: [
           _buildCalendarView(allEvaluations),
-          _buildListView(pendingEvaluations),
+          _buildListView(listEvaluations, hasFilters),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -69,6 +94,11 @@ class _EvaluationsScreenState extends ConsumerState<EvaluationsScreen>
   }
 
   Widget _buildCalendarView(List<Evaluation> evaluations) {
+    // Obtener semanas críticas del mes actual
+    final criticalWeeks = ref.watch(
+      criticalWeeksInMonthProvider(_focusedDay),
+    );
+
     return Column(
       children: [
         Container(
@@ -102,7 +132,9 @@ class _EvaluationsScreenState extends ConsumerState<EvaluationsScreen>
               });
             },
             onPageChanged: (focusedDay) {
-              _focusedDay = focusedDay;
+              setState(() {
+                _focusedDay = focusedDay;
+              });
             },
             eventLoader: (day) {
               return evaluations.where((e) {
@@ -111,9 +143,41 @@ class _EvaluationsScreenState extends ConsumerState<EvaluationsScreen>
                     e.dueDate.day == day.day;
               }).toList();
             },
+            calendarBuilders: CalendarBuilders(
+              defaultBuilder: (context, day, focusedDay) {
+                // Verificar si el día está en una semana crítica
+                final isInCriticalWeek = criticalWeeks.any((weekStart) {
+                  final weekEnd = weekStart.add(const Duration(days: 7));
+                  return day.isAfter(
+                          weekStart.subtract(const Duration(days: 1))) &&
+                      day.isBefore(weekEnd);
+                });
+
+                if (isInCriticalWeek) {
+                  return Container(
+                    margin: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF6B6B).withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFFFF6B6B).withValues(alpha: 0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${day.day}',
+                        style: const TextStyle(color: Color(0xFFFF6B6B)),
+                      ),
+                    ),
+                  );
+                }
+                return null;
+              },
+            ),
             calendarStyle: CalendarStyle(
               todayDecoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.3),
+                color: AppColors.primary.withValues(alpha: 0.3),
                 shape: BoxShape.circle,
               ),
               selectedDecoration: const BoxDecoration(
@@ -181,20 +245,22 @@ class _EvaluationsScreenState extends ConsumerState<EvaluationsScreen>
     );
   }
 
-  Widget _buildListView(List<Evaluation> evaluations) {
+  Widget _buildListView(List<Evaluation> evaluations, bool hasFilters) {
     if (evaluations.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Iconsax.task_square,
+              hasFilters ? Iconsax.search_normal : Iconsax.task_square,
               size: 80,
               color: AppColors.textTertiary,
             ),
             const SizedBox(height: 24),
             Text(
-              AppStrings.noEvaluationsPending,
+              hasFilters
+                  ? 'No hay resultados'
+                  : AppStrings.noEvaluationsPending,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -203,12 +269,24 @@ class _EvaluationsScreenState extends ConsumerState<EvaluationsScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              'Agrega tu primera evaluación',
+              hasFilters
+                  ? 'Intenta con otros filtros'
+                  : 'Agrega tu primera evaluación',
               style: TextStyle(
                 fontSize: 14,
                 color: AppColors.textTertiary,
               ),
             ),
+            if (hasFilters) ...[
+              const SizedBox(height: 16),
+              TextButton.icon(
+                onPressed: () {
+                  ref.read(evaluationFiltersProvider.notifier).clearFilters();
+                },
+                icon: const Icon(Iconsax.refresh),
+                label: const Text('Limpiar filtros'),
+              ),
+            ],
           ],
         ).animate().fadeIn(),
       );
@@ -232,6 +310,14 @@ class _EvaluationsScreenState extends ConsumerState<EvaluationsScreen>
       MaterialPageRoute(
         builder: (context) => EvaluationFormScreen(evaluation: evaluation),
       ),
+    );
+  }
+
+  void _showFilters(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => const EvaluationFiltersSheet(),
     );
   }
 }
