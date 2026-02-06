@@ -10,6 +10,7 @@ import '../../providers/evaluations_provider.dart';
 import '../../providers/courses_provider.dart';
 import '../../providers/critical_week_provider.dart';
 import '../evaluations/evaluation_detail_screen.dart';
+import '../statistics/statistics_screen.dart';
 import 'widgets/critical_week_detail_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -112,18 +113,46 @@ class HomeScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            _getGreeting(),
-            style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  fontWeight: FontWeight.bold,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _getGreeting(),
+                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    const SizedBox(height: AppSizes.spacing8),
+                    Text(
+                      capitalizedDate,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                    ),
+                  ],
                 ),
-          ),
-          const SizedBox(height: AppSizes.spacing8),
-          Text(
-            capitalizedDate,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppColors.textSecondary,
+              ),
+              IconButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const StatisticsScreen(),
+                    ),
+                  );
+                },
+                icon: const Icon(Iconsax.chart),
+                tooltip: 'Estadísticas',
+                style: IconButton.styleFrom(
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                  foregroundColor: AppColors.primary,
                 ),
+              ),
+            ],
           ),
         ],
       ),

@@ -131,23 +131,23 @@ dependencies:
 
 ---
 
-## 📊 Fase 5: Visualización (Semana 9-10)
+## 📊 Fase 5: Visualización (Semana 9-10) ✅ COMPLETADA
 
-### 5.1 Pantalla de Estadísticas
-- [ ] Layout de estadísticas
-- [ ] Resumen general (cards)
-- [ ] Integrar fl_chart
+### 5.1 Pantalla de Estadísticas ✅
+- [x] Layout de estadísticas
+- [x] Resumen general (cards)
+- [x] Integrar fl_chart
 
-### 5.2 Gráficos
-- [ ] Gráfico: Carga por curso (barras)
-- [ ] Gráfico: Entregas del mes (línea)
-- [ ] Gráfico: Distribución por tipo (torta)
+### 5.2 Gráficos ✅
+- [x] Gráfico: Carga por curso (barras)
+- [x] Gráfico: Entregas del mes (línea)
+- [x] Gráfico: Distribución por tipo (torta)
 - [ ] Calendario de calor (opcional)
 
-### 5.3 Dashboard Mejorado
-- [ ] Mejorar UI de Home
-- [ ] Animaciones sutiles
-- [ ] Indicadores visuales mejorados
+### 5.3 Dashboard Mejorado ✅
+- [x] Mejorar UI de Home
+- [x] Animaciones sutiles
+- [x] Indicadores visuales mejorados
 
 ---
 
