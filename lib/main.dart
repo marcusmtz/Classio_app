@@ -5,6 +5,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_strings.dart';
 import 'data/local/hive_service.dart';
+import 'core/services/notification_service.dart';
+import 'core/services/widget_service.dart';
 import 'presentation/screens/main_screen.dart';
 
 void main() async {
@@ -15,6 +17,15 @@ void main() async {
 
   // Inicializar locale español para intl
   await initializeDateFormatting('es', null);
+
+  // Inicializar servicio de notificaciones
+  final notificationService = NotificationService();
+  await notificationService.initialize();
+  await notificationService.requestPermissions();
+
+  // Inicializar widget service
+  final widgetService = WidgetService();
+  await widgetService.setupInteractivity();
 
   // Configurar orientación
   await SystemChrome.setPreferredOrientations([

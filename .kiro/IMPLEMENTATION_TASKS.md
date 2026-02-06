@@ -151,23 +151,23 @@ dependencies:
 
 ---
 
-## 🔔 Fase 6: Extras (Semana 11-12)
+## 🔔 Fase 6: Extras (Semana 11-12) ⚠️ EN PROGRESO
 
-### 6.1 Notificaciones Locales
-- [ ] Setup flutter_local_notifications
-- [ ] Programar recordatorios
-- [ ] Notificación 1 día antes
-- [ ] Notificación mismo día
-- [ ] Recordatorio personalizado
-- [ ] Cancelar al completar/eliminar
+### 6.1 Notificaciones Locales ✅
+- [x] Setup flutter_local_notifications
+- [x] Programar recordatorios
+- [x] Notificación 1 día antes
+- [x] Notificación mismo día
+- [x] Recordatorio personalizado
+- [x] Cancelar al completar/eliminar
 
-### 6.2 Widget de Pantalla
-- [ ] Crear widget Android
+### 6.2 Widget de Pantalla ✅
+- [x] Crear widget Android
 - [ ] Crear widget iOS
-- [ ] Mostrar clase actual
-- [ ] Mostrar próxima evaluación
-- [ ] Actualización periódica
-- [ ] Tap actions
+- [x] Mostrar clase actual
+- [x] Mostrar próxima evaluación
+- [x] Actualización periódica
+- [x] Tap actions
 
 ### 6.3 Pulido UI/UX
 - [ ] Tema personalizado

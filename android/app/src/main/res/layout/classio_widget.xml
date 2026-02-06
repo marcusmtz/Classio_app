@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@drawable/widget_background">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="12dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Classio"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#4F46E5" />
+
+        <TextView
+            android:id="@+id/last_update"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="--:--"
+            android:textSize="12sp"
+            android:textColor="#6B7280" />
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E5E7EB"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Clase Actual -->
+    <LinearLayout
+        android:id="@+id/current_class_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:background="@drawable/card_background"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📚 Clase Actual"
+            android:textSize="12sp"
+            android:textColor="#6B7280"
+            android:paddingBottom="4dp" />
+
+        <TextView
+            android:id="@+id/current_class_course"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="MAT-101"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#111827" />
+
+        <TextView
+            android:id="@+id/current_class_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="08:00 - 10:00"
+            android:textSize="14sp"
+            android:textColor="#4F46E5" />
+
+        <TextView
+            android:id="@+id/current_class_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Aula 301"
+            android:textSize="12sp"
+            android:textColor="#6B7280" />
+    </LinearLayout>
+
+    <!-- Próxima Clase -->
+    <LinearLayout
+        android:id="@+id/next_class_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:background="@drawable/card_background"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⏰ Próxima Clase"
+            android:textSize="12sp"
+            android:textColor="#6B7280"
+            android:paddingBottom="4dp" />
+
+        <TextView
+            android:id="@+id/next_class_course"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="FIS-102"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#111827" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/next_class_day"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lunes"
+                android:textSize="14sp"
+                android:textColor="#6B7280"
+                android:paddingEnd="8dp" />
+
+            <TextView
+                android:id="@+id/next_class_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="10:00"
+                android:textSize="14sp"
+                android:textColor="#10B981" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Próxima Evaluación -->
+    <LinearLayout
+        android:id="@+id/evaluation_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:background="@drawable/card_background_warning"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📝 Próxima Evaluación"
+            android:textSize="12sp"
+            android:textColor="#92400E"
+            android:paddingBottom="4dp" />
+
+        <TextView
+            android:id="@+id/evaluation_course"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="MAT-101"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#111827" />
+
+        <TextView
+            android:id="@+id/evaluation_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Examen Parcial"
+            android:textSize="14sp"
+            android:textColor="#111827" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="4dp">
+
+            <TextView
+                android:id="@+id/evaluation_days"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="En 2 días"
+                android:textSize="12sp"
+                android:textColor="#F59E0B"
+                android:textStyle="bold"
+                android:paddingEnd="8dp" />
+
+            <TextView
+                android:id="@+id/evaluation_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="15/02"
+                android:textSize="12sp"
+                android:textColor="#6B7280" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Empty State -->
+    <LinearLayout
+        android:id="@+id/empty_state"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="24dp"
+        android:visibility="visible">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📚"
+            android:textSize="32sp"
+            android:paddingBottom="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No hay clases hoy"
+            android:textSize="14sp"
+            android:textColor="#6B7280"
+            android:gravity="center" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Abre la app para más info"
+            android:textSize="12sp"
+            android:textColor="#9CA3AF"
+            android:gravity="center"
+            android:paddingTop="4dp" />
+    </LinearLayout>
+
+</LinearLayout>

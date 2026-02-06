@@ -2,12 +2,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../data/models/evaluation_model.dart';
 import '../../data/repositories/evaluation_repository.dart';
+import '../../core/services/notification_service.dart';
+import 'courses_provider.dart';
 
 final evaluationRepositoryProvider = Provider((ref) => EvaluationRepository());
 
+final notificationServiceProvider = Provider((ref) => NotificationService());
+
 final evaluationsProvider =
     StateNotifierProvider<EvaluationsNotifier, List<Evaluation>>((ref) {
-  return EvaluationsNotifier(ref.read(evaluationRepositoryProvider));
+  return EvaluationsNotifier(
+    ref.read(evaluationRepositoryProvider),
+    ref.read(notificationServiceProvider),
+    ref,
+  );
 });
 
 final pendingEvaluationsProvider = Provider<List<Evaluation>>((ref) {
@@ -24,9 +32,15 @@ final completedEvaluationsProvider = Provider<List<Evaluation>>((ref) {
 
 class EvaluationsNotifier extends StateNotifier<List<Evaluation>> {
   final EvaluationRepository _repository;
+  final NotificationService _notificationService;
+  final Ref _ref;
   final _uuid = const Uuid();
 
-  EvaluationsNotifier(this._repository) : super([]) {
+  EvaluationsNotifier(
+    this._repository,
+    this._notificationService,
+    this._ref,
+  ) : super([]) {
     _loadEvaluations();
   }
 
@@ -61,6 +75,9 @@ class EvaluationsNotifier extends StateNotifier<List<Evaluation>> {
 
     await _repository.add(evaluation);
     state = [...state, evaluation];
+
+    // Programar notificaciones
+    await _scheduleNotificationsForEvaluation(evaluation);
   }
 
   Future<void> updateEvaluation(Evaluation evaluation) async {
@@ -69,19 +86,29 @@ class EvaluationsNotifier extends StateNotifier<List<Evaluation>> {
       for (final e in state)
         if (e.id == evaluation.id) evaluation else e,
     ];
+
+    // Re-programar notificaciones
+    await _scheduleNotificationsForEvaluation(evaluation);
   }
 
   Future<void> deleteEvaluation(String id) async {
     await _repository.delete(id);
     state = state.where((e) => e.id != id).toList();
+
+    // Cancelar notificaciones
+    await _notificationService.cancelEvaluationNotifications(id);
   }
 
   Future<void> toggleCompleted(String id) async {
     final evaluation = state.firstWhere((e) => e.id == id);
     if (evaluation.isCompleted) {
       await _repository.markAsPending(id);
+      // Re-programar notificaciones
+      await _scheduleNotificationsForEvaluation(evaluation);
     } else {
       await _repository.markAsCompleted(id);
+      // Cancelar notificaciones al completar
+      await _notificationService.cancelEvaluationNotifications(id);
     }
     _loadEvaluations();
   }
@@ -154,5 +181,22 @@ class EvaluationsNotifier extends StateNotifier<List<Evaluation>> {
     } catch (e) {
       return null;
     }
+  }
+
+  /// Programar notificaciones para una evaluación
+  Future<void> _scheduleNotificationsForEvaluation(
+      Evaluation evaluation) async {
+    // Obtener información del curso
+    final courses = _ref.read(activeCoursesProvider);
+    final course = courses.firstWhere(
+      (c) => c.id == evaluation.courseId,
+      orElse: () => courses.first,
+    );
+
+    await _notificationService.scheduleEvaluationNotification(
+      evaluation: evaluation,
+      courseCode: course.code,
+      courseName: course.name,
+    );
   }
 }
