@@ -169,14 +169,14 @@ dependencies:
 - [x] Actualización periódica
 - [x] Tap actions
 
-### 6.3 Pulido UI/UX
-- [ ] Tema personalizado
-- [ ] Modo oscuro
-- [ ] Animaciones
-- [ ] Feedback visual
-- [ ] Mensajes de error amigables
-- [ ] Loading states
-- [ ] Empty states
+### 6.3 Pulido UI/UX ✅
+- [x] Tema personalizado
+- [x] Modo oscuro
+- [x] Animaciones
+- [x] Feedback visual
+- [x] Mensajes de error amigables
+- [x] Loading states
+- [x] Empty states
 
 ### 6.4 Testing
 - [ ] Unit tests para lógica de negocio

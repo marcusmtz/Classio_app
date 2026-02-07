@@ -46,4 +46,10 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    
+    // Excluir Digital Turbine y componentes problemáticos de Samsung
+    configurations.all {
+        exclude(group = "com.digitalturbine", module = "ignite-ui")
+        exclude(group = "com.digitalturbine.igniteui")
+    }
 }

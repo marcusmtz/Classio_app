@@ -60,6 +60,7 @@ class CoursesScreen extends ConsumerWidget {
               },
             ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'courses_fab',
         onPressed: () {
           Navigator.push(
             context,

@@ -11,6 +11,7 @@ import '../../providers/courses_provider.dart';
 import '../../providers/critical_week_provider.dart';
 import '../evaluations/evaluation_detail_screen.dart';
 import '../statistics/statistics_screen.dart';
+import '../settings/settings_screen.dart';
 import 'widgets/critical_week_detail_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -136,21 +137,43 @@ class HomeScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              IconButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const StatisticsScreen(),
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const StatisticsScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Iconsax.chart),
+                    tooltip: 'Estadísticas',
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                      foregroundColor: AppColors.primary,
                     ),
-                  );
-                },
-                icon: const Icon(Iconsax.chart),
-                tooltip: 'Estadísticas',
-                style: IconButton.styleFrom(
-                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                  foregroundColor: AppColors.primary,
-                ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SettingsScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Iconsax.setting_2),
+                    tooltip: 'Configuración',
+                    style: IconButton.styleFrom(
+                      backgroundColor:
+                          AppColors.secondary.withValues(alpha: 0.1),
+                      foregroundColor: AppColors.secondary,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

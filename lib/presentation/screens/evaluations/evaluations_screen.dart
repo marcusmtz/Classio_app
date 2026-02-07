@@ -86,6 +86,7 @@ class _EvaluationsScreenState extends ConsumerState<EvaluationsScreen>
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'evaluations_fab',
         onPressed: () => _navigateToForm(context),
         icon: const Icon(Iconsax.add),
         label: const Text('Nueva'),

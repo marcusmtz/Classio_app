@@ -52,6 +52,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen>
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'schedule_fab',
         onPressed: () => _showAddScheduleDialog(context),
         icon: const Icon(Iconsax.add),
         label: const Text('Agregar Clase'),

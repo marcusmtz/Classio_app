@@ -91,6 +91,7 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
             ),
       floatingActionButton: selectedCourse != null
           ? FloatingActionButton.extended(
+              heroTag: 'grades_fab',
               onPressed: () => _showAddGradeDialog(context, selectedCourse.id),
               icon: const Icon(Iconsax.add),
               label: const Text('Agregar Nota'),

@@ -4,6 +4,7 @@ import '../models/class_schedule_model.dart';
 import '../models/evaluation_model.dart';
 import '../models/grade_model.dart';
 import '../models/user_settings_model.dart';
+import '../models/app_settings_model.dart';
 
 class HiveService {
   static const String coursesBox = 'courses';
@@ -11,6 +12,7 @@ class HiveService {
   static const String evaluationsBox = 'evaluations';
   static const String gradesBox = 'grades';
   static const String settingsBox = 'settings';
+  static const String appSettingsBox = 'app_settings';
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -27,6 +29,8 @@ class HiveService {
     Hive.registerAdapter(GradeTypeAdapter());
     Hive.registerAdapter(GradeAdapter());
     Hive.registerAdapter(UserSettingsAdapter());
+    Hive.registerAdapter(ThemeModeAdapter());
+    Hive.registerAdapter(AppSettingsAdapter());
 
     // Abrir boxes
     await Hive.openBox<Course>(coursesBox);
@@ -34,6 +38,7 @@ class HiveService {
     await Hive.openBox<Evaluation>(evaluationsBox);
     await Hive.openBox<Grade>(gradesBox);
     await Hive.openBox<UserSettings>(settingsBox);
+    await Hive.openBox<AppSettings>(appSettingsBox);
   }
 
   static Box<Course> get coursesBoxInstance => Hive.box<Course>(coursesBox);
