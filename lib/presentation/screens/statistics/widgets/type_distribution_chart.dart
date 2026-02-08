@@ -42,52 +42,43 @@ class TypeDistributionChart extends ConsumerWidget {
                 ),
           ),
           const SizedBox(height: AppSizes.spacing24),
+          // Gráfico de torta centrado
           Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Gráfico de torta
-                SizedBox(
-                  width: 200,
-                  height: 200,
-                  child: PieChart(
-                    PieChartData(
-                      sectionsSpace: 2,
-                      centerSpaceRadius: 50,
-                      sections: distributions.map((dist) {
-                        final color = _getColorForType(dist.type);
-                        return PieChartSectionData(
-                          value: dist.count.toDouble(),
-                          title: '${dist.percentage.toStringAsFixed(0)}%',
-                          color: color,
-                          radius: 60,
-                          titleStyle: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AppSizes.spacing24),
-                // Leyenda
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: distributions.map((dist) {
-                    return _buildLegendItem(
-                      context,
-                      type: dist.type,
-                      count: dist.count,
-                      color: _getColorForType(dist.type),
+            child: SizedBox(
+              width: 200,
+              height: 200,
+              child: PieChart(
+                PieChartData(
+                  sectionsSpace: 2,
+                  centerSpaceRadius: 50,
+                  sections: distributions.map((dist) {
+                    final color = _getColorForType(dist.type);
+                    return PieChartSectionData(
+                      value: dist.count.toDouble(),
+                      title: '${dist.percentage.toStringAsFixed(0)}%',
+                      color: color,
+                      radius: 60,
+                      titleStyle: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     );
                   }).toList(),
                 ),
-              ],
+              ),
             ),
           ),
+          const SizedBox(height: AppSizes.spacing16),
+          // Leyenda
+          ...distributions.map((dist) {
+            return _buildLegendItem(
+              context,
+              type: dist.type,
+              count: dist.count,
+              color: _getColorForType(dist.type),
+            );
+          }),
         ],
       ),
     );
@@ -116,6 +107,7 @@ class TypeDistributionChart extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSizes.spacing12),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             width: 12,
@@ -126,22 +118,21 @@ class TypeDistributionChart extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: AppSizes.spacing8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.labelMedium,
-                ),
-                Text(
-                  '$count',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                ),
-              ],
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
+              Text(
+                '$count',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+              ),
+            ],
           ),
         ],
       ),
