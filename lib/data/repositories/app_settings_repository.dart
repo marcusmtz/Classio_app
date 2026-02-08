@@ -5,24 +5,23 @@ class AppSettingsRepository {
   static const String _boxName = 'app_settings';
   static const String _settingsKey = 'settings';
 
-  Box<AppSettings>? _box;
-
-  Future<void> init() async {
-    _box = await Hive.openBox<AppSettings>(_boxName);
-  }
+  Box<AppSettings> get _box => Hive.box<AppSettings>(_boxName);
 
   AppSettings getSettings() {
-    if (_box == null) {
+    try {
+      final settings =
+          _box.get(_settingsKey, defaultValue: const AppSettings())!;
+      print('📱 AppSettings loaded: themeMode=${settings.themeMode}');
+      return settings;
+    } catch (e) {
+      print('⚠️ Error loading AppSettings: $e');
       return const AppSettings();
     }
-    return _box!.get(_settingsKey, defaultValue: const AppSettings())!;
   }
 
   Future<void> saveSettings(AppSettings settings) async {
-    if (_box == null) {
-      await init();
-    }
-    await _box!.put(_settingsKey, settings);
+    await _box.put(_settingsKey, settings);
+    print('💾 AppSettings saved: themeMode=${settings.themeMode}');
   }
 
   Future<void> updateThemeMode(ThemeMode themeMode) async {

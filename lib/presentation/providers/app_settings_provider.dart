@@ -7,17 +7,17 @@ final appSettingsRepositoryProvider =
 
 final appSettingsProvider =
     StateNotifierProvider<AppSettingsNotifier, AppSettings>((ref) {
-  return AppSettingsNotifier(ref.read(appSettingsRepositoryProvider));
+  final notifier = AppSettingsNotifier(ref.read(appSettingsRepositoryProvider));
+  notifier.loadSettings();
+  return notifier;
 });
 
 class AppSettingsNotifier extends StateNotifier<AppSettings> {
   final AppSettingsRepository _repository;
 
-  AppSettingsNotifier(this._repository) : super(const AppSettings()) {
-    _loadSettings();
-  }
+  AppSettingsNotifier(this._repository) : super(const AppSettings());
 
-  void _loadSettings() {
+  void loadSettings() {
     state = _repository.getSettings();
   }
 

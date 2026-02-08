@@ -49,6 +49,8 @@ class HiveService {
   static Box<Grade> get gradesBoxInstance => Hive.box<Grade>(gradesBox);
   static Box<UserSettings> get settingsBoxInstance =>
       Hive.box<UserSettings>(settingsBox);
+  static Box<AppSettings> get appSettingsBoxInstance =>
+      Hive.box<AppSettings>(appSettingsBox);
 
   static Future<void> clearAll() async {
     await coursesBoxInstance.clear();
