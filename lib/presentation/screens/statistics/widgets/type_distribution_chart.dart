@@ -152,6 +152,7 @@ class TypeDistributionChart extends ConsumerWidget {
 
   Widget _buildEmptyState(BuildContext context) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(AppSizes.spacing20),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -159,6 +160,7 @@ class TypeDistributionChart extends ConsumerWidget {
         border: Border.all(color: AppColors.surfaceVariant),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             'Distribución por Tipo',
@@ -179,6 +181,7 @@ class TypeDistributionChart extends ConsumerWidget {
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                 ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
