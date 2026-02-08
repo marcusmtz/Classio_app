@@ -68,7 +68,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             BottomNavigationBarItem(
               icon: Icon(Iconsax.book),
-              activeIcon: Icon(Iconsax.book_15),
+              activeIcon: Icon(Iconsax.book_1),
               label: AppStrings.navCourses,
             ),
           ],

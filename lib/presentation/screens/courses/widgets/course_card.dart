@@ -79,15 +79,18 @@ class CourseCard extends StatelessWidget {
 
                 // Course icon
                 Container(
-                  padding: const EdgeInsets.all(AppSizes.spacing12),
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
                     color: color.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
                   ),
-                  child: Icon(
-                    Iconsax.book_15,
-                    color: color,
-                    size: AppSizes.iconMedium,
+                  child: Center(
+                    child: Icon(
+                      Iconsax.book_1,
+                      color: color,
+                      size: AppSizes.iconMedium,
+                    ),
                   ),
                 ),
                 const SizedBox(width: AppSizes.spacing16),
@@ -107,7 +110,7 @@ class CourseCard extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSizes.spacing4),
                       Text(
-                        'Toca para ver detalles',
+                        'Desliza para ver detalles',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: AppColors.textSecondary,
                             ),

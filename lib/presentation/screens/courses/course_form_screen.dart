@@ -136,16 +136,19 @@ class _CourseFormScreenState extends ConsumerState<CourseFormScreen> {
                     child: Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(AppSizes.spacing12),
+                          width: 48,
+                          height: 48,
                           decoration: BoxDecoration(
                             color: Color(_selectedColorValue).withOpacity(0.1),
                             borderRadius:
                                 BorderRadius.circular(AppSizes.radiusMedium),
                           ),
-                          child: Icon(
-                            Iconsax.book_15,
-                            color: Color(_selectedColorValue),
-                            size: AppSizes.iconMedium,
+                          child: Center(
+                            child: Icon(
+                              Iconsax.book_1,
+                              color: Color(_selectedColorValue),
+                              size: AppSizes.iconMedium,
+                            ),
                           ),
                         ),
                         const SizedBox(width: AppSizes.spacing12),
