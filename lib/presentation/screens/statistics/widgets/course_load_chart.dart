@@ -44,107 +44,109 @@ class CourseLoadChart extends ConsumerWidget {
                 ),
           ),
           const SizedBox(height: AppSizes.spacing24),
-          SizedBox(
-            height: 250,
-            child: BarChart(
-              BarChartData(
-                alignment: BarChartAlignment.spaceAround,
-                maxY: (topCourses
-                            .map((e) => e.evaluationCount)
-                            .reduce((a, b) => a > b ? a : b) +
-                        2)
-                    .toDouble(),
-                barTouchData: BarTouchData(
-                  enabled: true,
-                  touchTooltipData: BarTouchTooltipData(
-                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                      final course = topCourses[groupIndex];
-                      return BarTooltipItem(
-                        '${course.courseName}\n${course.evaluationCount} evaluaciones',
-                        const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                titlesData: FlTitlesData(
-                  show: true,
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        if (value.toInt() >= topCourses.length) {
-                          return const SizedBox.shrink();
-                        }
-                        final course = topCourses[value.toInt()];
-                        // Mostrar solo las primeras 3 letras
-                        final shortName = course.courseName.length > 8
-                            ? '${course.courseName.substring(0, 8)}...'
-                            : course.courseName;
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            shortName,
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            textAlign: TextAlign.center,
+          Center(
+            child: SizedBox(
+              height: 250,
+              child: BarChart(
+                BarChartData(
+                  alignment: BarChartAlignment.spaceAround,
+                  maxY: (topCourses
+                              .map((e) => e.evaluationCount)
+                              .reduce((a, b) => a > b ? a : b) +
+                          2)
+                      .toDouble(),
+                  barTouchData: BarTouchData(
+                    enabled: true,
+                    touchTooltipData: BarTouchTooltipData(
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        final course = topCourses[groupIndex];
+                        return BarTooltipItem(
+                          '${course.courseName}\n${course.evaluationCount} evaluaciones',
+                          const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
                           ),
                         );
                       },
                     ),
                   ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 30,
-                      getTitlesWidget: (value, meta) {
-                        return Text(
-                          value.toInt().toString(),
-                          style: const TextStyle(fontSize: 10),
-                        );
-                      },
+                  titlesData: FlTitlesData(
+                    show: true,
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          if (value.toInt() >= topCourses.length) {
+                            return const SizedBox.shrink();
+                          }
+                          final course = topCourses[value.toInt()];
+                          // Mostrar solo las primeras 3 letras
+                          final shortName = course.courseName.length > 8
+                              ? '${course.courseName.substring(0, 8)}...'
+                              : course.courseName;
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Text(
+                              shortName,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 30,
+                        getTitlesWidget: (value, meta) {
+                          return Text(
+                            value.toInt().toString(),
+                            style: const TextStyle(fontSize: 10),
+                          );
+                        },
+                      ),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
                     ),
                   ),
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    horizontalInterval: 1,
+                    getDrawingHorizontalLine: (value) {
+                      return FlLine(
+                        color: AppColors.surfaceVariant,
+                        strokeWidth: 1,
+                      );
+                    },
                   ),
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                ),
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  horizontalInterval: 1,
-                  getDrawingHorizontalLine: (value) {
-                    return FlLine(
-                      color: AppColors.surfaceVariant,
-                      strokeWidth: 1,
-                    );
-                  },
-                ),
-                borderData: FlBorderData(show: false),
-                barGroups: topCourses.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final course = entry.value;
-                  return BarChartGroupData(
-                    x: index,
-                    barRods: [
-                      BarChartRodData(
-                        toY: course.evaluationCount.toDouble(),
-                        color: Color(course.colorValue),
-                        width: 30,
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(4),
+                  borderData: FlBorderData(show: false),
+                  barGroups: topCourses.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final course = entry.value;
+                    return BarChartGroupData(
+                      x: index,
+                      barRods: [
+                        BarChartRodData(
+                          toY: course.evaluationCount.toDouble(),
+                          color: Color(course.colorValue),
+                          width: 30,
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(4),
+                          ),
                         ),
-                      ),
-                    ],
-                  );
-                }).toList(),
+                      ],
+                    );
+                  }).toList(),
+                ),
               ),
             ),
           ),

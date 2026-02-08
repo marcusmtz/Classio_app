@@ -42,12 +42,13 @@ class TypeDistributionChart extends ConsumerWidget {
                 ),
           ),
           const SizedBox(height: AppSizes.spacing24),
-          Row(
-            children: [
-              // Gráfico de torta
-              Expanded(
-                flex: 2,
-                child: SizedBox(
+          Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Gráfico de torta
+                SizedBox(
+                  width: 200,
                   height: 200,
                   child: PieChart(
                     PieChartData(
@@ -70,13 +71,11 @@ class TypeDistributionChart extends ConsumerWidget {
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: AppSizes.spacing16),
-              // Leyenda
-              Expanded(
-                flex: 1,
-                child: Column(
+                const SizedBox(width: AppSizes.spacing24),
+                // Leyenda
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: distributions.map((dist) {
                     return _buildLegendItem(
                       context,
@@ -86,8 +85,8 @@ class TypeDistributionChart extends ConsumerWidget {
                     );
                   }).toList(),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
