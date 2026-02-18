@@ -1,208 +1,129 @@
-# 📚 Classio - Planificador Académico Universitario
+# Classio - Planificador Académico Universitario
 
-<div align="center">
+Aplicación móvil offline-first para gestionar tu vida académica universitaria. Sin login, sin backend, 100% privado y almacenado localmente.
 
-![Flutter](https://img.shields.io/badge/Flutter-3.0+-02569B?logo=flutter)
-![Dart](https://img.shields.io/badge/Dart-3.0+-0175C2?logo=dart)
-![License](https://img.shields.io/badge/License-MIT-green)
+## Características
 
-**Tu compañero académico offline-first**
+### Funcionalidades Principales
+- Gestión de cursos con colores personalizados
+- Horario de clases semanal con vista de cuadrícula y lista
+- Sistema de evaluaciones (exámenes, tareas, proyectos)
+- Calculadora de notas y promedios por curso
+- Dashboard con vista del día actual
+- Detección de semanas críticas con alta carga académica
 
-Organiza tu vida universitaria sin complicaciones. Sin login, sin backend, 100% privado.
-
-</div>
-
----
-
-## ✨ Características
-
-### 🎯 Core Features
-- 📅 **Horario de Clases** - Visualiza tu semana académica
-- 📝 **Gestión de Evaluaciones** - Exámenes, tareas y proyectos
-- 📚 **Cursos** - Organiza todas tus materias
-- 🏠 **Dashboard "Hoy"** - Vista rápida de tu día
-
-### 🧠 Features Inteligentes
-- 🚨 **Semana Crítica** - Detecta semanas con alta carga
-- 💡 **Prioridad Inteligente** - Sugerencias automáticas
-- 📊 **Calculadora de Notas** - Calcula promedios y nota mínima necesaria
-- ✅ **Checklist de Proyectos** - Divide proyectos en subtareas
-- 📈 **Estadísticas** - Visualiza tu rendimiento académico
-
-### 🎨 Diseño Moderno
+### Características Técnicas
+- Almacenamiento local con Hive (NoSQL)
+- Arquitectura limpia con separación de capas
+- Gestión de estado con Riverpod
 - Material Design 3
+- Soporte para modo claro y oscuro
 - Animaciones fluidas
-- Modo claro y oscuro
+- Notificaciones locales
+- Fuente Inter de Google Fonts
 - Iconos premium (Iconsax, Phosphor)
-- Fuente Inter de Google
 
----
+## Requisitos
 
-## 🚀 Comenzar
+- Flutter 3.0 o superior
+- Dart 3.0 o superior
 
-### Requisitos
-- Flutter 3.0+
-- Dart 3.0+
-
-### Instalación
+## Instalación
 
 ```bash
 # Clonar el repositorio
 git clone https://github.com/tu-usuario/classio_app.git
 
-# Entrar al directorio
+# Navegar al directorio
 cd classio_app
 
 # Instalar dependencias
 flutter pub get
 
-# Ejecutar la app
+# Ejecutar la aplicación
 flutter run
 ```
 
----
+## Stack Tecnológico
 
-## 📱 Capturas de Pantalla
+### Framework y Lenguaje
+- Flutter 3.0+
+- Dart 3.0+
 
-_Próximamente_
+### Gestión de Estado
+- flutter_riverpod 2.5.1
 
----
+### Almacenamiento Local
+- hive 2.2.3
+- hive_flutter 1.1.0
 
-## 🏗️ Stack Técnico
+### UI y Animaciones
+- google_fonts 6.2.1
+- animate_do 3.3.4
+- flutter_animate 4.5.0
+- shimmer 3.0.0
+- flutter_staggered_animations 1.1.1
+- flutter_slidable 3.1.0
+- flutter_speed_dial 7.0.0
+- badges 3.1.2
 
-### Framework
-- **Flutter** - UI multiplataforma
-- **Dart** - Lenguaje de programación
-
-### Estado
-- **Riverpod** - Manejo de estado reactivo
-
-### Almacenamiento
-- **Hive** - Base de datos NoSQL local
-
-### UI/UX
-- **Google Fonts** - Tipografía moderna (Inter)
-- **Animate Do** - Animaciones predefinidas
-- **Flutter Animate** - Animaciones fluidas
-- **Iconsax** - Iconos modernos
-- **Phosphor Flutter** - Iconos minimalistas
-
-### Visualización
-- **Table Calendar** - Calendario personalizable
-- **FL Chart** - Gráficos elegantes
-- **Syncfusion Charts** - Gráficos profesionales
+### Visualización de Datos
+- table_calendar 3.1.2
+- fl_chart 0.68.0
+- syncfusion_flutter_charts 26.2.14
 
 ### Notificaciones
-- **Flutter Local Notifications** - Recordatorios locales
+- flutter_local_notifications 17.2.3
+- timezone 0.9.4
 
----
+### Iconos
+- iconsax 0.0.8
+- phosphor_flutter 2.1.0
 
-## 📂 Estructura del Proyecto
+### Utilidades
+- uuid 4.5.1
+- equatable 2.0.5
+- intl 0.19.0
+
+## Estructura del Proyecto
 
 ```
 lib/
 ├── core/
-│   ├── theme/          # Temas y colores
-│   ├── constants/      # Constantes y strings
-│   └── utils/          # Utilidades
+│   ├── constants/      # Constantes de la aplicación
+│   └── theme/          # Temas, colores y estilos
 ├── data/
-│   ├── models/         # Modelos de datos
-│   ├── repositories/   # Repositorios
-│   └── local/          # Almacenamiento local
+│   ├── local/          # Servicio de Hive
+│   ├── models/         # Modelos de datos con Hive
+│   └── repositories/   # Repositorios para acceso a datos
 ├── presentation/
-│   ├── screens/        # Pantallas
-│   ├── widgets/        # Widgets reutilizables
-│   └── providers/      # Providers de Riverpod
-└── services/           # Servicios (notificaciones, etc.)
+│   ├── providers/      # Providers de Riverpod
+│   └── screens/        # Pantallas de la aplicación
+│       ├── courses/    # Gestión de cursos
+│       ├── evaluations/# Gestión de evaluaciones
+│       ├── grades/     # Gestión de notas
+│       ├── home/       # Dashboard principal
+│       └── schedule/   # Horario de clases
+└── main.dart           # Punto de entrada
 ```
 
----
+## Arquitectura
 
-## 📖 Documentación
+El proyecto sigue una arquitectura limpia con tres capas principales:
 
-Toda la documentación del proyecto está en la carpeta `.kiro/`:
+1. Presentación: UI y lógica de presentación con Riverpod
+2. Datos: Modelos, repositorios y almacenamiento local
+3. Core: Constantes, temas y utilidades compartidas
 
-- **[PROJECT_OVERVIEW.md](.kiro/PROJECT_OVERVIEW.md)** - Visión general
-- **[SCREENS_SPEC.md](.kiro/SCREENS_SPEC.md)** - Especificación de pantallas
-- **[FEATURES_LOGIC.md](.kiro/FEATURES_LOGIC.md)** - Lógica de features
-- **[DATA_MODELS.md](.kiro/DATA_MODELS.md)** - Modelos de datos
-- **[ARCHITECTURE.md](.kiro/ARCHITECTURE.md)** - Arquitectura
-- **[IMPLEMENTATION_TASKS.md](.kiro/IMPLEMENTATION_TASKS.md)** - Tareas
-- **[QUICK_START.md](.kiro/QUICK_START.md)** - Guía rápida
+## Modelos de Datos
 
----
+- CourseModel: Información de cursos (nombre, código, color, créditos)
+- ClassScheduleModel: Horario de clases (día, hora, ubicación)
+- EvaluationModel: Evaluaciones (tipo, fecha, peso, estado)
+- GradeModel: Notas obtenidas en evaluaciones
+- UserSettingsModel: Configuración del usuario
 
-## 🗺️ Roadmap
 
-### ✅ Fase 1: Setup (Completado)
-- [x] Configuración del proyecto
-- [x] Tema moderno
-- [x] Navegación básica
-- [x] Pantalla Home con diseño premium
+## Autor
 
-### 🚧 Fase 2: Fundamentos (En progreso)
-- [ ] Modelos de datos
-- [ ] Almacenamiento local con Hive
-- [ ] Repositorios
-
-### 📋 Fase 3: Cursos
-- [ ] CRUD de cursos
-- [ ] Selector de colores
-- [ ] Calculadora de notas
-
-### 📋 Fase 4: Horario
-- [ ] Vista semanal
-- [ ] Crear/editar clases
-- [ ] Detección de clase actual
-
-### 📋 Fase 5: Evaluaciones
-- [ ] Calendario de evaluaciones
-- [ ] CRUD completo
-- [ ] Prioridad inteligente
-- [ ] Checklist de proyectos
-
-### 📋 Fase 6: Features Avanzadas
-- [ ] Semana crítica
-- [ ] Estadísticas y gráficos
-- [ ] Notificaciones
-- [ ] Widget de pantalla
-
----
-
-## 🤝 Contribuir
-
-Las contribuciones son bienvenidas. Por favor:
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
----
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más información.
-
----
-
-## 👨‍💻 Autor
-
-Desarrollado con ❤️ para estudiantes universitarios
-
----
-
-## 🙏 Agradecimientos
-
-- Flutter Team por el increíble framework
-- Comunidad de Flutter por los paquetes open source
-- Todos los estudiantes que inspiraron este proyecto
-
----
-
-<div align="center">
-
-**¿Te gusta el proyecto? Dale una ⭐**
-
-</div>
+Desarrollado para estudiantes universitarios que buscan organizar su vida académica de forma simple y privada.
