@@ -363,6 +363,7 @@ class HomeScreen extends ConsumerWidget {
         ref.read(coursesProvider.notifier).getCourseById(evaluation.courseId);
     if (course == null) return const SizedBox.shrink();
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final now = DateTime.now();
     final daysUntil = evaluation.dueDate.difference(now).inDays;
     final timeFormat = DateFormat('HH:mm');
@@ -425,9 +426,14 @@ class HomeScreen extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSizes.spacing20),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: isDark ? AppColors.darkSurface : AppColors.surface,
           borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
-          border: Border.all(color: AppColors.surfaceVariant, width: 1),
+          border: Border.all(
+            color: isDark
+                ? AppColors.darkSurfaceVariant
+                : AppColors.surfaceVariant,
+            width: 1,
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -513,10 +519,12 @@ class HomeScreen extends ConsumerWidget {
 
   Widget _buildQuickStats(
       BuildContext context, int pendingCount, int weekCount) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(AppSizes.spacing20),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
+        color: isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
         borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
       ),
       child: Column(
@@ -565,10 +573,12 @@ class HomeScreen extends ConsumerWidget {
     required String value,
     required Color color,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(AppSizes.spacing16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: isDark ? AppColors.darkSurface : AppColors.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
       ),
       child: Column(
@@ -591,6 +601,8 @@ class HomeScreen extends ConsumerWidget {
 
   Widget _buildTodayEvaluations(
       BuildContext context, WidgetRef ref, List<Evaluation> evaluations) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -626,7 +638,7 @@ class HomeScreen extends ConsumerWidget {
               child: Container(
                 padding: const EdgeInsets.all(AppSizes.spacing16),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: isDark ? AppColors.darkSurface : AppColors.surface,
                   borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
                   border: Border.all(
                     color: Color(course.colorValue).withValues(alpha: 0.3),
@@ -667,7 +679,7 @@ class HomeScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    Icon(
+                    const Icon(
                       Iconsax.arrow_right_3,
                       color: AppColors.textSecondary,
                       size: AppSizes.iconSmall,

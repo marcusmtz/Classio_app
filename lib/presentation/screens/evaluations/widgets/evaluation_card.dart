@@ -26,6 +26,8 @@ class EvaluationCard extends ConsumerWidget {
           orElse: () => throw Exception('Course not found'),
         );
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Slidable(
       endActionPane: ActionPane(
         motion: const ScrollMotion(),
@@ -49,7 +51,7 @@ class EvaluationCard extends ConsumerWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? AppColors.darkSurface : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -94,10 +96,12 @@ class EvaluationCard extends ConsumerWidget {
                           children: [
                             Text(
                               evaluation.title,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
+                                color: isDark
+                                    ? AppColors.darkTextPrimary
+                                    : AppColors.textPrimary,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -123,20 +127,24 @@ class EvaluationCard extends ConsumerWidget {
                       Icon(
                         Iconsax.calendar,
                         size: 16,
-                        color: AppColors.textSecondary,
+                        color: isDark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.textSecondary,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         _formatDate(evaluation.dueDate),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
-                          color: AppColors.textSecondary,
+                          color: isDark
+                              ? AppColors.darkTextSecondary
+                              : AppColors.textSecondary,
                         ),
                       ),
                       const Spacer(),
                       if (evaluation.subtasks != null &&
                           evaluation.subtasks!.isNotEmpty)
-                        _buildProgressIndicator(),
+                        _buildProgressIndicator(isDark),
                     ],
                   ),
                   if (evaluation.isCompleted) ...[
@@ -147,18 +155,18 @@ class EvaluationCard extends ConsumerWidget {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.success.withOpacity(0.1),
+                        color: AppColors.success.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Row(
+                      child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
+                          Icon(
                             Iconsax.tick_circle5,
                             size: 16,
                             color: AppColors.success,
                           ),
-                          const SizedBox(width: 6),
+                          SizedBox(width: 6),
                           Text(
                             'Completada',
                             style: TextStyle(
@@ -206,7 +214,7 @@ class EvaluationCard extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -253,7 +261,7 @@ class EvaluationCard extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
@@ -267,7 +275,7 @@ class EvaluationCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildProgressIndicator() {
+  Widget _buildProgressIndicator(bool isDark) {
     final progress = evaluation.progress;
     final completed = (evaluation.subtasks!.where((s) => s.isCompleted).length);
     final total = evaluation.subtasks!.length;
@@ -282,17 +290,21 @@ class EvaluationCard extends ConsumerWidget {
             children: [
               CircularProgressIndicator(
                 value: progress,
-                backgroundColor: AppColors.surfaceVariant,
+                backgroundColor: isDark
+                    ? AppColors.darkSurfaceVariant
+                    : AppColors.surfaceVariant,
                 valueColor: const AlwaysStoppedAnimation(AppColors.success),
                 strokeWidth: 3,
               ),
               Center(
                 child: Text(
                   '$completed',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: isDark
+                        ? AppColors.darkTextPrimary
+                        : AppColors.textPrimary,
                   ),
                 ),
               ),
@@ -302,9 +314,10 @@ class EvaluationCard extends ConsumerWidget {
         const SizedBox(width: 6),
         Text(
           '/$total',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
-            color: AppColors.textSecondary,
+            color:
+                isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
           ),
         ),
       ],

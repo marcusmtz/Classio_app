@@ -100,12 +100,14 @@ class _EvaluationsScreenState extends ConsumerState<EvaluationsScreen>
       criticalWeeksInMonthProvider(_focusedDay),
     );
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       children: [
         Container(
           margin: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDark ? AppColors.cardDark : Colors.white,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
@@ -177,22 +179,67 @@ class _EvaluationsScreenState extends ConsumerState<EvaluationsScreen>
               },
             ),
             calendarStyle: CalendarStyle(
+              // Colores de texto
+              defaultTextStyle: TextStyle(
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+              weekendTextStyle: TextStyle(
+                color: isDark ? Colors.white70 : Colors.black54,
+              ),
+              outsideTextStyle: TextStyle(
+                color: isDark ? Colors.white24 : Colors.black26,
+              ),
+              disabledTextStyle: TextStyle(
+                color: isDark ? Colors.white24 : Colors.black26,
+              ),
+              // Decoraciones
               todayDecoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.3),
                 shape: BoxShape.circle,
               ),
+              todayTextStyle: TextStyle(
+                color: isDark ? Colors.white : AppColors.primary,
+                fontWeight: FontWeight.bold,
+              ),
               selectedDecoration: const BoxDecoration(
                 color: AppColors.primary,
                 shape: BoxShape.circle,
+              ),
+              selectedTextStyle: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
               ),
               markerDecoration: const BoxDecoration(
                 color: AppColors.secondary,
                 shape: BoxShape.circle,
               ),
             ),
-            headerStyle: const HeaderStyle(
+            headerStyle: HeaderStyle(
               formatButtonVisible: false,
               titleCentered: true,
+              titleTextStyle: TextStyle(
+                color: isDark ? Colors.white : Colors.black87,
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+              ),
+              leftChevronIcon: Icon(
+                Icons.chevron_left,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+              rightChevronIcon: Icon(
+                Icons.chevron_right,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+            ),
+            daysOfWeekStyle: DaysOfWeekStyle(
+              weekdayStyle: TextStyle(
+                color: isDark ? Colors.white70 : Colors.black54,
+                fontWeight: FontWeight.w600,
+              ),
+              weekendStyle: TextStyle(
+                color: isDark ? Colors.white70 : Colors.black54,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ).animate().fadeIn(duration: 300.ms).slideY(begin: -0.1, end: 0),
