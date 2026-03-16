@@ -6,6 +6,7 @@ import '../../../core/constants/app_sizes.dart';
 import '../../../data/models/class_schedule_model.dart';
 import '../../providers/schedule_provider.dart';
 import '../../providers/courses_provider.dart';
+import '../../providers/app_settings_provider.dart';
 
 class ScheduleFormScreen extends ConsumerStatefulWidget {
   final ClassSchedule? schedule;
@@ -97,20 +98,36 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
             const SizedBox(height: AppSizes.spacing16),
 
             // Selector de día
-            DropdownButtonFormField<DayOfWeek>(
-              value: _selectedDay,
-              decoration: const InputDecoration(
-                labelText: 'Día',
-                prefixIcon: Icon(Iconsax.calendar),
-              ),
-              items: DayOfWeek.values.map((day) {
-                return DropdownMenuItem(
-                  value: day,
-                  child: Text(_getDayName(day)),
+            Consumer(
+              builder: (context, ref, child) {
+                final settings = ref.watch(appSettingsProvider);
+                final availableDays = DayOfWeek.values.where((day) {
+                  if (day == DayOfWeek.saturday && !settings.showSaturday) {
+                    return false;
+                  }
+                  if (day == DayOfWeek.sunday && !settings.showSunday) {
+                    return false;
+                  }
+                  return true;
+                }).toList();
+
+                return DropdownButtonFormField<DayOfWeek>(
+                  value: _selectedDay,
+                  decoration: const InputDecoration(
+                    labelText: 'Día',
+                    prefixIcon: Icon(Iconsax.calendar),
+                  ),
+                  items: availableDays.map((day) {
+                    return DropdownMenuItem(
+                      value: day,
+                      child: Text(_getDayName(day)),
+                    );
+                  }).toList(),
+                  onChanged: (value) => setState(() => _selectedDay = value),
+                  validator: (value) =>
+                      value == null ? 'Selecciona un día' : null,
                 );
-              }).toList(),
-              onChanged: (value) => setState(() => _selectedDay = value),
-              validator: (value) => value == null ? 'Selecciona un día' : null,
+              },
             ),
             const SizedBox(height: AppSizes.spacing16),
 

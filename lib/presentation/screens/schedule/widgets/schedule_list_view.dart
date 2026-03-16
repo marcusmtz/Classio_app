@@ -7,6 +7,7 @@ import '../../../../core/constants/app_sizes.dart';
 import '../../../../data/models/class_schedule_model.dart';
 import '../../../providers/courses_provider.dart';
 import '../../../providers/schedule_provider.dart';
+import '../../../providers/app_settings_provider.dart';
 import '../schedule_form_screen.dart';
 
 class ScheduleListView extends ConsumerWidget {
@@ -16,6 +17,8 @@ class ScheduleListView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(appSettingsProvider);
+
     if (schedules.isEmpty) {
       return Center(
         child: Column(
@@ -56,8 +59,8 @@ class ScheduleListView extends ConsumerWidget {
       DayOfWeek.wednesday,
       DayOfWeek.thursday,
       DayOfWeek.friday,
-      DayOfWeek.saturday,
-      DayOfWeek.sunday,
+      if (settings.showSaturday) DayOfWeek.saturday,
+      if (settings.showSunday) DayOfWeek.sunday,
     ];
 
     return ListView.builder(

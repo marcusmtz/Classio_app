@@ -55,4 +55,20 @@ class AppSettingsRepository {
       lastUpdated: DateTime.now(),
     ));
   }
+
+  Future<void> updateShowSaturday(bool show) async {
+    final settings = getSettings();
+    await saveSettings(settings.copyWith(
+      showSaturday: show,
+      lastUpdated: DateTime.now(),
+    ));
+  }
+
+  Future<void> updateShowSunday(bool show) async {
+    final settings = getSettings();
+    await saveSettings(settings.copyWith(
+      showSunday: show,
+      lastUpdated: DateTime.now(),
+    ));
+  }
 }

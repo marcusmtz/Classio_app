@@ -9,7 +9,6 @@ import '../../../data/models/app_settings_model.dart' as models;
 import '../../providers/app_settings_provider.dart';
 import 'notifications_settings_screen.dart';
 import 'widget_settings_screen.dart';
-import 'package:flutter/material.dart' as material;
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -43,8 +42,57 @@ class SettingsScreen extends ConsumerWidget {
 
           const Divider(height: 1),
 
-          // Notificaciones y Widget
-          _buildSectionHeader(context, 'Funcionalidades'),
+          // Horario
+          _buildSectionHeader(context, 'Horario'),
+          Consumer(
+            builder: (context, ref, child) {
+              final settings = ref.watch(appSettingsProvider);
+              return Column(
+                children: [
+                  SwitchListTile(
+                    secondary: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.info.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child:
+                          const Icon(Iconsax.calendar, color: AppColors.info),
+                    ),
+                    title: const Text('Mostrar Sábado'),
+                    subtitle: const Text('Incluir sábado en el horario'),
+                    value: settings.showSaturday,
+                    onChanged: (value) {
+                      ref
+                          .read(appSettingsProvider.notifier)
+                          .updateShowSaturday(value);
+                    },
+                  ),
+                  SwitchListTile(
+                    secondary: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.info.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child:
+                          const Icon(Iconsax.calendar, color: AppColors.info),
+                    ),
+                    title: const Text('Mostrar Domingo'),
+                    subtitle: const Text('Incluir domingo en el horario'),
+                    value: settings.showSunday,
+                    onChanged: (value) {
+                      ref
+                          .read(appSettingsProvider.notifier)
+                          .updateShowSunday(value);
+                    },
+                  ),
+                ],
+              );
+            },
+          ),
+
+          const Divider(height: 1),
           ListTile(
             leading: Container(
               padding: const EdgeInsets.all(8),
@@ -91,8 +139,8 @@ class SettingsScreen extends ConsumerWidget {
 
           const Divider(height: 1),
 
-          // Datos
-          _buildSectionHeader(context, 'Datos'),
+          // Notificaciones y Widget
+          _buildSectionHeader(context, 'Funcionalidades'),
           ListTile(
             leading: Container(
               padding: const EdgeInsets.all(8),

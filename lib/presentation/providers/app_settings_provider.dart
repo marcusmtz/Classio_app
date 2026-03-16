@@ -40,4 +40,14 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
     await _repository.updateLanguage(language);
     state = state.copyWith(language: language);
   }
+
+  Future<void> updateShowSaturday(bool show) async {
+    await _repository.updateShowSaturday(show);
+    state = state.copyWith(showSaturday: show);
+  }
+
+  Future<void> updateShowSunday(bool show) async {
+    await _repository.updateShowSunday(show);
+    state = state.copyWith(showSunday: show);
+  }
 }
