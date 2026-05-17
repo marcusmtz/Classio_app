@@ -3,15 +3,13 @@ import '../../data/models/class_schedule_model.dart';
 
 /// Servicio para gestionar widgets de pantalla de inicio
 ///
-/// NOTA: Este servicio está deshabilitado temporalmente.
-/// Para habilitar widgets, agrega 'home_widget: ^0.6.0' en pubspec.yaml
-/// y descomenta la implementación completa.
+/// NOTA: Funcionalidad de widget deshabilitada.
 class WidgetService {
   static final WidgetService _instance = WidgetService._internal();
   factory WidgetService() => _instance;
   WidgetService._internal();
 
-  /// Actualizar widget con información de clase actual y próxima evaluación
+  /// Actualizar widget (deshabilitado)
   Future<void> updateWidget({
     ClassSchedule? currentClass,
     ClassSchedule? nextClass,
@@ -20,19 +18,19 @@ class WidgetService {
     String? nextCourseCode,
     String? evaluationCourseCode,
   }) async {
-    // Widget functionality disabled - add home_widget package to enable
+    // Widget functionality disabled
     return;
   }
 
-  /// Limpiar datos del widget
+  /// Limpiar datos del widget (deshabilitado)
   Future<void> clearWidget() async {
-    // Widget functionality disabled - add home_widget package to enable
+    // Widget functionality disabled
     return;
   }
 
-  /// Configurar callback para tap en widget
+  /// Configurar callback para tap en widget (deshabilitado)
   Future<void> setupInteractivity() async {
-    // Widget functionality disabled - add home_widget package to enable
+    // Widget functionality disabled
     return;
   }
 }

@@ -58,5 +58,6 @@ class HiveService {
     await evaluationsBoxInstance.clear();
     await gradesBoxInstance.clear();
     await settingsBoxInstance.clear();
+    await appSettingsBoxInstance.clear();
   }
 }

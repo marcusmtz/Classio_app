@@ -1,13 +1,32 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../data/models/course_model.dart';
+import '../../data/repositories/class_schedule_repository.dart';
 import '../../data/repositories/course_repository.dart';
+import '../../data/repositories/evaluation_repository.dart';
+import '../../data/repositories/grade_repository.dart';
+import '../../core/services/notification_service.dart';
 
 final courseRepositoryProvider = Provider((ref) => CourseRepository());
+final classScheduleRepositoryProvider =
+    Provider((ref) => ClassScheduleRepository());
+final courseEvaluationRepositoryProvider =
+    Provider((ref) => EvaluationRepository());
+final courseGradeRepositoryProvider = Provider((ref) => GradeRepository());
+final courseNotificationServiceProvider =
+    Provider((ref) => NotificationService());
 
 final coursesProvider =
     StateNotifierProvider<CoursesNotifier, List<Course>>((ref) {
-  return CoursesNotifier(ref.read(courseRepositoryProvider));
+  return CoursesNotifier(
+    ref.read(courseRepositoryProvider),
+    ref.read(classScheduleRepositoryProvider),
+    ref.read(courseEvaluationRepositoryProvider),
+    ref.read(courseGradeRepositoryProvider),
+    ref.read(courseNotificationServiceProvider),
+  );
 });
 
 final activeCoursesProvider = Provider<List<Course>>((ref) {
@@ -16,10 +35,30 @@ final activeCoursesProvider = Provider<List<Course>>((ref) {
 
 class CoursesNotifier extends StateNotifier<List<Course>> {
   final CourseRepository _repository;
+  final ClassScheduleRepository _classScheduleRepository;
+  final EvaluationRepository _evaluationRepository;
+  final GradeRepository _gradeRepository;
+  late final Future<void> Function(String evaluationId)
+      _cancelEvaluationNotifications;
   final _uuid = const Uuid();
+  StreamSubscription? _coursesSubscription;
 
-  CoursesNotifier(this._repository) : super([]) {
+  CoursesNotifier(
+    this._repository,
+    this._classScheduleRepository,
+    this._evaluationRepository,
+    this._gradeRepository,
+    NotificationService notificationService, {
+    Future<void> Function(String evaluationId)? cancelEvaluationNotifications,
+  }) : super([]) {
+    _cancelEvaluationNotifications = cancelEvaluationNotifications ??
+        ((evaluationId) =>
+            notificationService.cancelEvaluationNotifications(evaluationId));
+
     _loadCourses();
+    _coursesSubscription = _repository.watch().listen((_) {
+      _loadCourses();
+    });
   }
 
   void _loadCourses() {
@@ -52,8 +91,16 @@ class CoursesNotifier extends StateNotifier<List<Course>> {
   }
 
   Future<void> deleteCourse(String id) async {
+    final deletedEvaluationIds = await _evaluationRepository.deleteByCourse(id);
+
+    for (final evaluationId in deletedEvaluationIds) {
+      await _cancelEvaluationNotifications(evaluationId);
+    }
+
+    await _classScheduleRepository.deleteByCourse(id);
+    await _gradeRepository.deleteByCourse(id);
     await _repository.delete(id);
-    state = state.where((c) => c.id != id).toList();
+    _loadCourses();
   }
 
   Future<void> archiveCourse(String id) async {
@@ -72,5 +119,11 @@ class CoursesNotifier extends StateNotifier<List<Course>> {
     } catch (e) {
       return null;
     }
+  }
+
+  @override
+  void dispose() {
+    _coursesSubscription?.cancel();
+    super.dispose();
   }
 }

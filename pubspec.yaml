@@ -18,21 +18,16 @@ dependencies:
   hive_flutter: ^1.1.0
 
   # UI Moderna y Animaciones
-  animate_do: ^3.3.4              # Animaciones predefinidas elegantes
   flutter_animate: ^4.5.0         # Animaciones fluidas y modernas
-  shimmer: ^3.0.0                 # Loading skeletons modernos
-  flutter_staggered_animations: ^1.1.1  # Animaciones escalonadas
   
   # Componentes UI Premium
   google_fonts: ^6.2.1            # Fuentes modernas de Google
   flutter_slidable: ^3.1.0        # Swipe actions elegantes
-  flutter_speed_dial: ^7.0.0      # FAB con opciones
   badges: ^3.1.2                  # Badges modernos
   
   # Calendario y Gráficos
   table_calendar: ^3.1.2
   fl_chart: ^0.68.0
-  syncfusion_flutter_charts: ^26.2.14  # Gráficos profesionales
   
   # Notificaciones
   flutter_local_notifications: ^17.2.3
@@ -47,7 +42,6 @@ dependencies:
   # Iconos Premium
   cupertino_icons: ^1.0.8
   iconsax: ^0.0.8                 # Iconos modernos y elegantes
-  phosphor_flutter: ^2.1.0        # Iconos minimalistas premium
 
 dev_dependencies:
   flutter_test:

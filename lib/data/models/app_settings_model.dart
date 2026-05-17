@@ -30,12 +30,20 @@ class AppSettings extends Equatable {
   @HiveField(4)
   final DateTime? lastUpdated;
 
+  @HiveField(5)
+  final bool showSaturday;
+
+  @HiveField(6)
+  final bool showSunday;
+
   const AppSettings({
     this.themeMode = ThemeMode.system,
     this.notificationsEnabled = true,
     this.widgetEnabled = true,
     this.language = 'es',
     this.lastUpdated,
+    this.showSaturday = true,
+    this.showSunday = true,
   });
 
   AppSettings copyWith({
@@ -44,6 +52,8 @@ class AppSettings extends Equatable {
     bool? widgetEnabled,
     String? language,
     DateTime? lastUpdated,
+    bool? showSaturday,
+    bool? showSunday,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -51,6 +61,8 @@ class AppSettings extends Equatable {
       widgetEnabled: widgetEnabled ?? this.widgetEnabled,
       language: language ?? this.language,
       lastUpdated: lastUpdated ?? this.lastUpdated,
+      showSaturday: showSaturday ?? this.showSaturday,
+      showSunday: showSunday ?? this.showSunday,
     );
   }
 
@@ -61,5 +73,7 @@ class AppSettings extends Equatable {
         widgetEnabled,
         language,
         lastUpdated,
+        showSaturday,
+        showSunday,
       ];
 }

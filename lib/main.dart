@@ -7,7 +7,6 @@ import 'core/theme/app_theme.dart';
 import 'core/constants/app_strings.dart';
 import 'data/local/hive_service.dart';
 import 'core/services/notification_service.dart';
-import 'core/services/widget_service.dart';
 import 'presentation/providers/app_settings_provider.dart';
 import 'data/models/app_settings_model.dart' as models;
 import 'presentation/screens/main_screen.dart';
@@ -25,10 +24,6 @@ void main() async {
   final notificationService = NotificationService();
   await notificationService.initialize();
   await notificationService.requestPermissions();
-
-  // Inicializar widget service
-  final widgetService = WidgetService();
-  await widgetService.setupInteractivity();
 
   // Configurar orientación
   await SystemChrome.setPreferredOrientations([

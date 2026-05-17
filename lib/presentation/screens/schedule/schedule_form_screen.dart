@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
+import '../../../core/utils/error_utils.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../data/models/class_schedule_model.dart';
+import '../../../domain/usecases/validate_schedule_usecase.dart';
 import '../../providers/schedule_provider.dart';
 import '../../providers/courses_provider.dart';
+import '../../providers/app_settings_provider.dart';
 
 class ScheduleFormScreen extends ConsumerStatefulWidget {
   final ClassSchedule? schedule;
@@ -97,20 +100,36 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
             const SizedBox(height: AppSizes.spacing16),
 
             // Selector de día
-            DropdownButtonFormField<DayOfWeek>(
-              value: _selectedDay,
-              decoration: const InputDecoration(
-                labelText: 'Día',
-                prefixIcon: Icon(Iconsax.calendar),
-              ),
-              items: DayOfWeek.values.map((day) {
-                return DropdownMenuItem(
-                  value: day,
-                  child: Text(_getDayName(day)),
+            Consumer(
+              builder: (context, ref, child) {
+                final settings = ref.watch(appSettingsProvider);
+                final availableDays = DayOfWeek.values.where((day) {
+                  if (day == DayOfWeek.saturday && !settings.showSaturday) {
+                    return false;
+                  }
+                  if (day == DayOfWeek.sunday && !settings.showSunday) {
+                    return false;
+                  }
+                  return true;
+                }).toList();
+
+                return DropdownButtonFormField<DayOfWeek>(
+                  value: _selectedDay,
+                  decoration: const InputDecoration(
+                    labelText: 'Día',
+                    prefixIcon: Icon(Iconsax.calendar),
+                  ),
+                  items: availableDays.map((day) {
+                    return DropdownMenuItem(
+                      value: day,
+                      child: Text(_getDayName(day)),
+                    );
+                  }).toList(),
+                  onChanged: (value) => setState(() => _selectedDay = value),
+                  validator: (value) =>
+                      value == null ? 'Selecciona un día' : null,
                 );
-              }).toList(),
-              onChanged: (value) => setState(() => _selectedDay = value),
-              validator: (value) => value == null ? 'Selecciona un día' : null,
+              },
             ),
             const SizedBox(height: AppSizes.spacing16),
 
@@ -219,35 +238,22 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
     }
 
     // Validar que las clases estén entre 7am y 11pm
-    if (_startTime!.hour < 7) {
+    final startModel = TimeOfDayModel(
+      hour: _startTime!.hour,
+      minute: _startTime!.minute,
+    );
+    final endModel = TimeOfDayModel(
+      hour: _endTime!.hour,
+      minute: _endTime!.minute,
+    );
+    final isValidWindow =
+        ValidateScheduleUseCase().isValidTimeWindow(startModel, endModel);
+
+    if (!isValidWindow) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Las clases no pueden empezar antes de las 7:00 AM'),
+          content: Text('Horario inválido. Revisa hora de inicio y término.'),
           backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    if (_endTime!.hour > 23 || (_endTime!.hour == 23 && _endTime!.minute > 0)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content:
-              Text('Las clases no pueden terminar después de las 11:00 PM'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    // Validar que la hora de fin sea después de la de inicio
-    final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
-    final endMinutes = _endTime!.hour * 60 + _endTime!.minute;
-
-    if (endMinutes <= startMinutes) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('La hora de fin debe ser después de la hora de inicio'),
         ),
       );
       return;
@@ -258,14 +264,8 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
         final updatedSchedule = widget.schedule!.copyWith(
           courseId: _selectedCourseId!,
           dayOfWeek: _selectedDay!,
-          startTime: TimeOfDayModel(
-            hour: _startTime!.hour,
-            minute: _startTime!.minute,
-          ),
-          endTime: TimeOfDayModel(
-            hour: _endTime!.hour,
-            minute: _endTime!.minute,
-          ),
+          startTime: startModel,
+          endTime: endModel,
           location: _locationController.text.isEmpty
               ? null
               : _locationController.text,
@@ -285,14 +285,8 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
         await ref.read(scheduleProvider.notifier).addSchedule(
               courseId: _selectedCourseId!,
               dayOfWeek: _selectedDay!,
-              startTime: TimeOfDayModel(
-                hour: _startTime!.hour,
-                minute: _startTime!.minute,
-              ),
-              endTime: TimeOfDayModel(
-                hour: _endTime!.hour,
-                minute: _endTime!.minute,
-              ),
+              startTime: startModel,
+              endTime: endModel,
               location: _locationController.text.isEmpty
                   ? null
                   : _locationController.text,
@@ -308,7 +302,7 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          SnackBar(content: Text(ErrorUtils.toUserMessage(e))),
         );
       }
     }

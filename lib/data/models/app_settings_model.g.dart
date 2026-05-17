@@ -22,13 +22,15 @@ class AppSettingsAdapter extends TypeAdapter<AppSettings> {
       widgetEnabled: fields[2] as bool,
       language: fields[3] as String,
       lastUpdated: fields[4] as DateTime?,
+      showSaturday: fields[5] as bool,
+      showSunday: fields[6] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, AppSettings obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.themeMode)
       ..writeByte(1)
@@ -38,7 +40,11 @@ class AppSettingsAdapter extends TypeAdapter<AppSettings> {
       ..writeByte(3)
       ..write(obj.language)
       ..writeByte(4)
-      ..write(obj.lastUpdated);
+      ..write(obj.lastUpdated)
+      ..writeByte(5)
+      ..write(obj.showSaturday)
+      ..writeByte(6)
+      ..write(obj.showSunday);
   }
 
   @override

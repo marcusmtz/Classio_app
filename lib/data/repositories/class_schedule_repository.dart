@@ -33,6 +33,16 @@ class ClassScheduleRepository {
     await _box.delete(id);
   }
 
+  Future<int> deleteByCourse(String courseId) async {
+    final schedules = getByCourse(courseId);
+
+    for (final schedule in schedules) {
+      await _box.delete(schedule.id);
+    }
+
+    return schedules.length;
+  }
+
   Stream<BoxEvent> watch() {
     return _box.watch();
   }

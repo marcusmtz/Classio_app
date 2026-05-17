@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../domain/usecases/detect_critical_week_usecase.dart';
 import '../../data/models/evaluation_model.dart';
 import 'evaluations_provider.dart';
 
@@ -36,50 +37,28 @@ class CriticalWeekInfo {
 }
 
 /// Provider que detecta si la semana actual es crítica
+final detectCriticalWeekUseCaseProvider =
+    Provider((ref) => DetectCriticalWeekUseCase());
+
 final criticalWeekProvider = Provider<CriticalWeekInfo>((ref) {
   final pendingEvaluations = ref.watch(pendingEvaluationsProvider);
+  final useCase = ref.watch(detectCriticalWeekUseCaseProvider);
   final now = DateTime.now();
 
-  // Obtener evaluaciones de esta semana (próximos 7 días)
-  final thisWeekEvaluations = pendingEvaluations.where((e) {
-    final diff = e.dueDate.difference(now).inDays;
-    return diff >= 0 && diff <= 7;
-  }).toList();
-
-  // Contar por tipo
-  final examsCount =
-      thisWeekEvaluations.where((e) => e.type == EvaluationType.exam).length;
-  final projectsCount =
-      thisWeekEvaluations.where((e) => e.type == EvaluationType.project).length;
-  final tasksCount =
-      thisWeekEvaluations.where((e) => e.type == EvaluationType.task).length;
-  final totalCount = thisWeekEvaluations.length;
-
-  // Criterios de detección:
-  // - ≥ 3 exámenes
-  // - ≥ 5 entregas totales
-  // - ≥ 2 proyectos
-  final isCritical = examsCount >= 3 || totalCount >= 5 || projectsCount >= 2;
-
-  // Generar mensaje dinámico
-  String message = '';
-  if (isCritical) {
-    if (examsCount >= 3) {
-      message = 'Tienes $examsCount exámenes esta semana 📚';
-    } else if (projectsCount >= 2) {
-      message = '$projectsCount proyectos por entregar - organízate 💪';
-    } else {
-      message = '$totalCount entregas pendientes - esta semana es pesada 😵‍💫';
-    }
-  }
+  final thisWeekEvaluations = useCase.upcomingWindow(
+    pendingEvaluations,
+    referenceDate: now,
+    days: 7,
+  );
+  final analysis = useCase.analyze(thisWeekEvaluations);
 
   return CriticalWeekInfo(
-    isCritical: isCritical,
-    totalEvaluations: totalCount,
-    examsCount: examsCount,
-    projectsCount: projectsCount,
-    tasksCount: tasksCount,
-    message: message,
+    isCritical: analysis.isCritical,
+    totalEvaluations: analysis.totalEvaluations,
+    examsCount: analysis.examsCount,
+    projectsCount: analysis.projectsCount,
+    tasksCount: analysis.tasksCount,
+    message: analysis.message,
     evaluations: thisWeekEvaluations,
   );
 });
@@ -88,6 +67,7 @@ final criticalWeekProvider = Provider<CriticalWeekInfo>((ref) {
 final criticalWeeksInMonthProvider =
     Provider.family<List<DateTime>, DateTime>((ref, month) {
   final pendingEvaluations = ref.watch(pendingEvaluationsProvider);
+  final useCase = ref.watch(detectCriticalWeekUseCaseProvider);
   final criticalWeeks = <DateTime>[];
 
   // Obtener primer día del mes
@@ -106,14 +86,8 @@ final criticalWeeksInMonthProvider =
           e.dueDate.isBefore(weekEnd);
     }).toList();
 
-    // Verificar si es crítica
-    final examsCount =
-        weekEvaluations.where((e) => e.type == EvaluationType.exam).length;
-    final projectsCount =
-        weekEvaluations.where((e) => e.type == EvaluationType.project).length;
-    final totalCount = weekEvaluations.length;
-
-    if (examsCount >= 3 || totalCount >= 5 || projectsCount >= 2) {
+    final analysis = useCase.analyze(weekEvaluations);
+    if (analysis.isCritical) {
       criticalWeeks.add(weekStart);
     }
 

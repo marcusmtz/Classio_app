@@ -1,13 +1,21 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import '../../domain/usecases/validate_schedule_usecase.dart';
 import '../../data/models/class_schedule_model.dart';
 import '../../data/repositories/class_schedule_repository.dart';
 
 final scheduleRepositoryProvider = Provider((ref) => ClassScheduleRepository());
+final validateScheduleUseCaseProvider =
+    Provider((ref) => ValidateScheduleUseCase());
 
 final scheduleProvider =
     StateNotifierProvider<ScheduleNotifier, List<ClassSchedule>>((ref) {
-  return ScheduleNotifier(ref.read(scheduleRepositoryProvider));
+  return ScheduleNotifier(
+    ref.read(scheduleRepositoryProvider),
+    ref.read(validateScheduleUseCaseProvider),
+  );
 });
 
 final scheduleByDayProvider =
@@ -19,10 +27,21 @@ final scheduleByDayProvider =
 
 class ScheduleNotifier extends StateNotifier<List<ClassSchedule>> {
   final ClassScheduleRepository _repository;
+  final ValidateScheduleUseCase _validateScheduleUseCase;
+  final DateTime Function() _nowProvider;
   final _uuid = const Uuid();
+  StreamSubscription? _scheduleSubscription;
 
-  ScheduleNotifier(this._repository) : super([]) {
+  ScheduleNotifier(
+    this._repository,
+    this._validateScheduleUseCase, {
+    DateTime Function()? nowProvider,
+  })  : _nowProvider = nowProvider ?? DateTime.now,
+        super([]) {
     _loadSchedules();
+    _scheduleSubscription = _repository.watch().listen((_) {
+      _loadSchedules();
+    });
   }
 
   void _loadSchedules() {
@@ -36,8 +55,16 @@ class ScheduleNotifier extends StateNotifier<List<ClassSchedule>> {
     required TimeOfDayModel endTime,
     String? location,
   }) async {
-    // Validar solapamiento
-    if (_hasOverlap(dayOfWeek, startTime, endTime, null)) {
+    if (!_validateScheduleUseCase.isValidTimeWindow(startTime, endTime)) {
+      throw Exception('Horario inválido. Revisa hora de inicio y término.');
+    }
+
+    if (_validateScheduleUseCase.hasOverlap(
+      schedules: state,
+      day: dayOfWeek,
+      start: startTime,
+      end: endTime,
+    )) {
       throw Exception('Ya existe una clase en este horario');
     }
 
@@ -56,9 +83,20 @@ class ScheduleNotifier extends StateNotifier<List<ClassSchedule>> {
   }
 
   Future<void> updateSchedule(ClassSchedule schedule) async {
-    // Validar solapamiento (excluyendo el schedule actual)
-    if (_hasOverlap(schedule.dayOfWeek, schedule.startTime, schedule.endTime,
-        schedule.id)) {
+    if (!_validateScheduleUseCase.isValidTimeWindow(
+      schedule.startTime,
+      schedule.endTime,
+    )) {
+      throw Exception('Horario inválido. Revisa hora de inicio y término.');
+    }
+
+    if (_validateScheduleUseCase.hasOverlap(
+      schedules: state,
+      day: schedule.dayOfWeek,
+      start: schedule.startTime,
+      end: schedule.endTime,
+      excludeId: schedule.id,
+    )) {
       throw Exception('Ya existe una clase en este horario');
     }
 
@@ -74,36 +112,12 @@ class ScheduleNotifier extends StateNotifier<List<ClassSchedule>> {
     state = state.where((s) => s.id != id).toList();
   }
 
-  bool _hasOverlap(DayOfWeek day, TimeOfDayModel start, TimeOfDayModel end,
-      String? excludeId) {
-    final schedulesOnDay = state.where(
-        (s) => s.dayOfWeek == day && (excludeId == null || s.id != excludeId));
-
-    for (final schedule in schedulesOnDay) {
-      // Convertir a minutos para comparar
-      final existingStart =
-          schedule.startTime.hour * 60 + schedule.startTime.minute;
-      final existingEnd = schedule.endTime.hour * 60 + schedule.endTime.minute;
-      final newStart = start.hour * 60 + start.minute;
-      final newEnd = end.hour * 60 + end.minute;
-
-      // Verificar solapamiento
-      if ((newStart >= existingStart && newStart < existingEnd) ||
-          (newEnd > existingStart && newEnd <= existingEnd) ||
-          (newStart <= existingStart && newEnd >= existingEnd)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
   List<ClassSchedule> getSchedulesByCourse(String courseId) {
     return state.where((s) => s.courseId == courseId).toList();
   }
 
   ClassSchedule? getCurrentClass() {
-    final now = DateTime.now();
+    final now = _nowProvider();
     final currentDay = _getDayOfWeek(now.weekday);
     final currentTime = TimeOfDayModel(hour: now.hour, minute: now.minute);
     final currentMinutes = currentTime.hour * 60 + currentTime.minute;
@@ -124,7 +138,7 @@ class ScheduleNotifier extends StateNotifier<List<ClassSchedule>> {
   }
 
   ClassSchedule? getNextClass() {
-    final now = DateTime.now();
+    final now = _nowProvider();
     final currentDay = _getDayOfWeek(now.weekday);
     final currentTime = TimeOfDayModel(hour: now.hour, minute: now.minute);
     final currentMinutes = currentTime.hour * 60 + currentTime.minute;
@@ -145,7 +159,8 @@ class ScheduleNotifier extends StateNotifier<List<ClassSchedule>> {
 
     // Buscar en los próximos días
     for (int i = 1; i < 7; i++) {
-      final nextDay = _getDayOfWeek((now.weekday + i) % 7);
+      final nextWeekday = ((now.weekday - 1 + i) % 7) + 1;
+      final nextDay = _getDayOfWeek(nextWeekday);
       final nextDaySchedules = state
           .where((s) => s.dayOfWeek == nextDay)
           .toList()
@@ -178,5 +193,11 @@ class ScheduleNotifier extends StateNotifier<List<ClassSchedule>> {
       default:
         return DayOfWeek.monday;
     }
+  }
+
+  @override
+  void dispose() {
+    _scheduleSubscription?.cancel();
+    super.dispose();
   }
 }

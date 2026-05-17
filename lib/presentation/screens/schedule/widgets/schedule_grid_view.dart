@@ -5,6 +5,7 @@ import '../../../../core/constants/app_sizes.dart';
 import '../../../../data/models/class_schedule_model.dart';
 import '../../../providers/courses_provider.dart';
 import '../../../providers/schedule_provider.dart';
+import '../../../providers/app_settings_provider.dart';
 import '../schedule_form_screen.dart';
 
 class ScheduleGridView extends ConsumerWidget {
@@ -58,47 +59,62 @@ class ScheduleGridView extends ConsumerWidget {
   }
 
   Widget _buildWeekHeader() {
-    final days = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-    final now = DateTime.now();
-    final currentDay = now.weekday;
+    return Consumer(
+      builder: (context, ref, child) {
+        final settings = ref.watch(appSettingsProvider);
+        final days = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+        final now = DateTime.now();
+        final currentDay = now.weekday;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: AppSizes.spacing8),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border(
-          bottom: BorderSide(color: AppColors.surfaceVariant),
-        ),
-      ),
-      child: Row(
-        children: [
-          const SizedBox(width: 60), // Espacio para columna de horas
-          ...List.generate(7, (index) {
-            final isToday = currentDay == index + 1;
-            return Expanded(
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: AppSizes.spacing8),
-                decoration: isToday
-                    ? BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        borderRadius:
-                            BorderRadius.circular(AppSizes.radiusSmall),
-                      )
-                    : null,
-                child: Text(
-                  days[index],
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                    color: isToday ? AppColors.primary : AppColors.textPrimary,
+        // Filtrar días según configuración
+        final visibleDays = <int>[];
+        for (int i = 0; i < 7; i++) {
+          if (i == 5 && !settings.showSaturday) continue; // Sábado
+          if (i == 6 && !settings.showSunday) continue; // Domingo
+          visibleDays.add(i);
+        }
+
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: AppSizes.spacing8),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            border: Border(
+              bottom: BorderSide(color: AppColors.surfaceVariant),
+            ),
+          ),
+          child: Row(
+            children: [
+              const SizedBox(width: 60), // Espacio para columna de horas
+              ...visibleDays.map((index) {
+                final isToday = currentDay == index + 1;
+                return Expanded(
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: AppSizes.spacing8),
+                    decoration: isToday
+                        ? BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.1),
+                            borderRadius:
+                                BorderRadius.circular(AppSizes.radiusSmall),
+                          )
+                        : null,
+                    child: Text(
+                      days[index],
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontWeight:
+                            isToday ? FontWeight.bold : FontWeight.normal,
+                        color:
+                            isToday ? AppColors.primary : AppColors.textPrimary,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            );
-          }),
-        ],
-      ),
+                );
+              }),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -106,6 +122,16 @@ class ScheduleGridView extends ConsumerWidget {
     const startHour = 7;
     const endHour = 24;
     const hourHeight = 80.0;
+
+    final settings = ref.watch(appSettingsProvider);
+
+    // Filtrar días según configuración
+    final visibleDayIndices = <int>[];
+    for (int i = 0; i < 7; i++) {
+      if (i == 5 && !settings.showSaturday) continue; // Sábado
+      if (i == 6 && !settings.showSunday) continue; // Domingo
+      visibleDayIndices.add(i);
+    }
 
     return SizedBox(
       height: (endHour - startHour) * hourHeight,
@@ -137,7 +163,7 @@ class ScheduleGridView extends ConsumerWidget {
               // Grid de días
               Expanded(
                 child: Row(
-                  children: List.generate(7, (dayIndex) {
+                  children: visibleDayIndices.map((dayIndex) {
                     return Expanded(
                       child: Container(
                         decoration: BoxDecoration(
@@ -166,7 +192,7 @@ class ScheduleGridView extends ConsumerWidget {
                         ),
                       ),
                     );
-                  }),
+                  }).toList(),
                 ),
               ),
             ],
@@ -175,7 +201,7 @@ class ScheduleGridView extends ConsumerWidget {
           Row(
             children: [
               const SizedBox(width: 60),
-              ...List.generate(7, (dayIndex) {
+              ...visibleDayIndices.map((dayIndex) {
                 final day = _getDayOfWeek(dayIndex + 1);
                 final daySchedules = schedules
                     .where((s) => s.dayOfWeek == day)

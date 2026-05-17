@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
+import '../../../core/utils/error_utils.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../data/models/grade_model.dart';
@@ -427,7 +428,7 @@ class _GradeFormScreenState extends ConsumerState<GradeFormScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString().replaceAll('Exception: ', '')),
+            content: Text(ErrorUtils.toUserMessage(e)),
             backgroundColor: AppColors.error,
           ),
         );
