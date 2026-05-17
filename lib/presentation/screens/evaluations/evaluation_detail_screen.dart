@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/models/evaluation_model.dart';
+import '../../../data/models/course_model.dart';
 import '../../providers/evaluations_provider.dart';
 import '../../providers/courses_provider.dart';
 
@@ -35,9 +36,14 @@ class _EvaluationDetailScreenState
           (e) => e.id == widget.evaluation.id,
           orElse: () => widget.evaluation,
         );
-    final course = ref.watch(coursesProvider).firstWhere(
-          (c) => c.id == evaluation.courseId,
-        );
+    final courses = ref.watch(coursesProvider);
+    Course? course;
+    for (final item in courses) {
+      if (item.id == evaluation.courseId) {
+        course = item;
+        break;
+      }
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -74,14 +80,18 @@ class _EvaluationDetailScreenState
     );
   }
 
-  Widget _buildHeader(Evaluation evaluation, course) {
+  Widget _buildHeader(Evaluation evaluation, Course? course) {
+    final courseColor =
+        course != null ? Color(course.colorValue) : AppColors.info;
+    final courseName = course?.name ?? 'Curso eliminado';
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Color(course.colorValue),
-            Color(course.colorValue).withOpacity(0.7),
+            courseColor,
+            courseColor.withOpacity(0.7),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
@@ -107,7 +117,7 @@ class _EvaluationDetailScreenState
           ),
           const SizedBox(height: 12),
           Text(
-            course.name,
+            courseName,
             style: const TextStyle(
               fontSize: 16,
               color: Colors.white,

@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../providers/courses_provider.dart';
 import '../../../data/models/course_model.dart';
+import 'course_detail_screen.dart';
 import 'course_form_screen.dart';
 import 'widgets/course_card.dart';
 import 'widgets/empty_courses_state.dart';
@@ -101,7 +102,13 @@ class _CoursesScreenState extends ConsumerState<CoursesScreen> {
                     return CourseCard(
                       course: course,
                       onTap: () {
-                        // TODO: Navegar a detalle del curso
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                CourseDetailScreen(course: course),
+                          ),
+                        );
                       },
                       onEdit: () {
                         Navigator.push(

@@ -9,19 +9,14 @@ class AppSettingsRepository {
 
   AppSettings getSettings() {
     try {
-      final settings =
-          _box.get(_settingsKey, defaultValue: const AppSettings())!;
-      print('📱 AppSettings loaded: themeMode=${settings.themeMode}');
-      return settings;
-    } catch (e) {
-      print('⚠️ Error loading AppSettings: $e');
+      return _box.get(_settingsKey, defaultValue: const AppSettings())!;
+    } catch (_) {
       return const AppSettings();
     }
   }
 
   Future<void> saveSettings(AppSettings settings) async {
     await _box.put(_settingsKey, settings);
-    print('💾 AppSettings saved: themeMode=${settings.themeMode}');
   }
 
   Future<void> updateThemeMode(ThemeMode themeMode) async {

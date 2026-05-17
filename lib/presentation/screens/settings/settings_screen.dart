@@ -1,12 +1,21 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/utils/error_utils.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../data/models/app_settings_model.dart' as models;
+import '../../../data/local/hive_service.dart';
 import '../../providers/app_settings_provider.dart';
+import '../../providers/courses_provider.dart';
+import '../../providers/evaluations_provider.dart';
+import '../../providers/grades_provider.dart';
+import '../../providers/schedule_provider.dart';
 import 'notifications_settings_screen.dart';
 import 'widget_settings_screen.dart';
 
@@ -38,6 +47,24 @@ class SettingsScreen extends ConsumerWidget {
             subtitle: Text(_getThemeModeText(settings.themeMode)),
             trailing: const Icon(Iconsax.arrow_right_3),
             onTap: () => _showThemeDialog(context, ref, settings.themeMode),
+          ),
+          ListTile(
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.info.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Iconsax.global, color: AppColors.info),
+            ),
+            title: const Text('Idioma'),
+            subtitle: Text(
+              settings.language == 'es'
+                  ? 'Español (predeterminado)'
+                  : settings.language,
+            ),
+            trailing: const Icon(Iconsax.arrow_right_3),
+            onTap: () => _showComingSoonDialog(context, 'Selección de idioma'),
           ),
 
           const Divider(height: 1),
@@ -119,13 +146,17 @@ class SettingsScreen extends ConsumerWidget {
             leading: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.info.withValues(alpha: 0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Iconsax.mobile, color: AppColors.info),
+              child: const Icon(Iconsax.mobile, color: AppColors.primary),
             ),
             title: const Text('Widget de Pantalla'),
-            subtitle: const Text('Configurar widget'),
+            subtitle: Text(
+              settings.widgetEnabled
+                  ? 'Solicitado (temporalmente deshabilitado)'
+                  : 'Desactivado',
+            ),
             trailing: const Icon(Iconsax.arrow_right_3),
             onTap: () {
               Navigator.push(
@@ -139,8 +170,8 @@ class SettingsScreen extends ConsumerWidget {
 
           const Divider(height: 1),
 
-          // Notificaciones y Widget
-          _buildSectionHeader(context, 'Funcionalidades'),
+          // Datos
+          _buildSectionHeader(context, 'Datos'),
           ListTile(
             leading: Container(
               padding: const EdgeInsets.all(8),
@@ -148,12 +179,12 @@ class SettingsScreen extends ConsumerWidget {
                 color: AppColors.warning.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Iconsax.export, color: AppColors.warning),
+              child: const Icon(Iconsax.export_1, color: AppColors.warning),
             ),
             title: const Text('Exportar Datos'),
             subtitle: const Text('Guardar copia de seguridad'),
             trailing: const Icon(Iconsax.arrow_right_3),
-            onTap: () => _showComingSoonDialog(context, 'Exportar Datos'),
+            onTap: () => _showExportDataDialog(context, ref),
           ),
           ListTile(
             leading: Container(
@@ -167,7 +198,7 @@ class SettingsScreen extends ConsumerWidget {
             title: const Text('Limpiar Datos'),
             subtitle: const Text('Eliminar toda la información'),
             trailing: const Icon(Iconsax.arrow_right_3),
-            onTap: () => _showClearDataDialog(context),
+            onTap: () => _showClearDataDialog(context, ref),
           ),
 
           const Divider(height: 1),
@@ -381,7 +412,6 @@ class SettingsScreen extends ConsumerWidget {
               _buildFeature('✅ Seguimiento de evaluaciones'),
               _buildFeature('✅ Calculadora de notas'),
               _buildFeature('✅ Notificaciones inteligentes'),
-              _buildFeature('✅ Widget de pantalla'),
               _buildFeature('✅ 100% offline'),
             ],
           ),
@@ -531,7 +561,133 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _showClearDataDialog(BuildContext context) {
+  Future<void> _showExportDataDialog(
+      BuildContext context, WidgetRef ref) async {
+    final exportMap = {
+      'generatedAt': DateTime.now().toIso8601String(),
+      'app': AppStrings.appName,
+      'version': '1.0.0',
+      'courses': ref.read(coursesProvider).map((course) {
+        return {
+          'id': course.id,
+          'name': course.name,
+          'code': course.code,
+          'colorValue': course.colorValue,
+          'createdAt': course.createdAt.toIso8601String(),
+          'updatedAt': course.updatedAt?.toIso8601String(),
+          'isActive': course.isActive,
+        };
+      }).toList(),
+      'schedule': ref.read(scheduleProvider).map((schedule) {
+        return {
+          'id': schedule.id,
+          'courseId': schedule.courseId,
+          'dayOfWeek': schedule.dayOfWeek.name,
+          'startTime': {
+            'hour': schedule.startTime.hour,
+            'minute': schedule.startTime.minute,
+          },
+          'endTime': {
+            'hour': schedule.endTime.hour,
+            'minute': schedule.endTime.minute,
+          },
+          'location': schedule.location,
+          'professor': schedule.professor,
+          'isRecurrent': schedule.isRecurrent,
+          'createdAt': schedule.createdAt.toIso8601String(),
+        };
+      }).toList(),
+      'evaluations': ref.read(evaluationsProvider).map((evaluation) {
+        return {
+          'id': evaluation.id,
+          'courseId': evaluation.courseId,
+          'title': evaluation.title,
+          'description': evaluation.description,
+          'type': evaluation.type.name,
+          'dueDate': evaluation.dueDate.toIso8601String(),
+          'priority': evaluation.priority.name,
+          'isCompleted': evaluation.isCompleted,
+          'completedAt': evaluation.completedAt?.toIso8601String(),
+          'isPriorityManual': evaluation.isPriorityManual,
+          'createdAt': evaluation.createdAt.toIso8601String(),
+          'subtasks': evaluation.subtasks?.map((subtask) {
+            return {
+              'id': subtask.id,
+              'title': subtask.title,
+              'isCompleted': subtask.isCompleted,
+              'order': subtask.order,
+            };
+          }).toList(),
+        };
+      }).toList(),
+      'grades': ref.read(gradesProvider).map((grade) {
+        return {
+          'id': grade.id,
+          'courseId': grade.courseId,
+          'title': grade.title,
+          'type': grade.type.name,
+          'score': grade.score,
+          'maxScore': grade.maxScore,
+          'weight': grade.weight,
+          'date': grade.date.toIso8601String(),
+          'notes': grade.notes,
+          'createdAt': grade.createdAt.toIso8601String(),
+        };
+      }).toList(),
+      'appSettings': {
+        'themeMode': ref.read(appSettingsProvider).themeMode.name,
+        'notificationsEnabled':
+            ref.read(appSettingsProvider).notificationsEnabled,
+        'widgetEnabled': ref.read(appSettingsProvider).widgetEnabled,
+        'language': ref.read(appSettingsProvider).language,
+        'showSaturday': ref.read(appSettingsProvider).showSaturday,
+        'showSunday': ref.read(appSettingsProvider).showSunday,
+        'lastUpdated':
+            ref.read(appSettingsProvider).lastUpdated?.toIso8601String(),
+      },
+    };
+
+    final exportJson = const JsonEncoder.withIndent('  ').convert(exportMap);
+
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Exportación JSON'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: SelectableText(
+              exportJson,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              await Clipboard.setData(ClipboardData(text: exportJson));
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('JSON copiado al portapapeles'),
+                  ),
+                );
+              }
+            },
+            child: const Text('Copiar JSON'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showClearDataDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -551,9 +707,36 @@ class SettingsScreen extends ConsumerWidget {
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              _showComingSoonDialog(context, 'Limpiar Datos');
+              try {
+                await ref
+                    .read(notificationServiceProvider)
+                    .cancelAllNotifications();
+                await HiveService.clearAll();
+                ref.read(appSettingsProvider.notifier).loadSettings();
+
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Todos los datos fueron eliminados'),
+                      backgroundColor: AppColors.success,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(ErrorUtils.toUserMessage(
+                        e,
+                        fallback: 'No se pudo limpiar los datos.',
+                      )),
+                      backgroundColor: AppColors.error,
+                    ),
+                  );
+                }
+              }
             },
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.error,

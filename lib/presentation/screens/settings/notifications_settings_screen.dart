@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
+import '../../../core/utils/error_utils.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/services/notification_service.dart';
+import '../../providers/app_settings_provider.dart';
 import '../../providers/evaluations_provider.dart';
 
 class NotificationsSettingsScreen extends ConsumerStatefulWidget {
@@ -21,6 +23,8 @@ class _NotificationsSettingsScreenState
   @override
   Widget build(BuildContext context) {
     final notificationService = ref.read(notificationServiceProvider);
+    final settings = ref.watch(appSettingsProvider);
+    final notificationsEnabled = settings.notificationsEnabled;
 
     return Scaffold(
       appBar: AppBar(
@@ -73,6 +77,30 @@ class _NotificationsSettingsScreenState
           ),
           const SizedBox(height: AppSizes.spacing24),
 
+          SwitchListTile(
+            secondary: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.secondary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child:
+                  const Icon(Iconsax.notification, color: AppColors.secondary),
+            ),
+            title: const Text('Notificaciones activas'),
+            subtitle: Text(
+              notificationsEnabled
+                  ? 'Los recordatorios se programan automáticamente'
+                  : 'No se programarán recordatorios',
+            ),
+            value: notificationsEnabled,
+            onChanged: _isLoading
+                ? null
+                : (value) => _toggleNotifications(value, notificationService),
+          ),
+
+          const SizedBox(height: AppSizes.spacing8),
+
           // Configuración de notificaciones
           Text(
             'Recordatorios Predeterminados',
@@ -86,19 +114,19 @@ class _NotificationsSettingsScreenState
             icon: Iconsax.calendar_1,
             title: '1 día antes',
             subtitle: 'A las 8:00 AM',
-            enabled: true,
+            enabled: notificationsEnabled,
           ),
           _buildNotificationTile(
             icon: Iconsax.clock,
             title: 'El mismo día',
             subtitle: 'A las 8:00 AM',
-            enabled: true,
+            enabled: notificationsEnabled,
           ),
           _buildNotificationTile(
             icon: Iconsax.timer,
             title: '2 horas antes',
             subtitle: 'Si la evaluación tiene hora específica',
-            enabled: true,
+            enabled: notificationsEnabled,
           ),
 
           const SizedBox(height: AppSizes.spacing24),
@@ -125,7 +153,9 @@ class _NotificationsSettingsScreenState
             title: const Text('Probar Notificación'),
             subtitle: const Text('Enviar una notificación de prueba'),
             trailing: const Icon(Iconsax.arrow_right_3),
-            onTap: () => _testNotification(notificationService),
+            onTap: notificationsEnabled
+                ? () => _testNotification(notificationService)
+                : null,
           ),
 
           ListTile(
@@ -146,7 +176,7 @@ class _NotificationsSettingsScreenState
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Iconsax.arrow_right_3),
-            onTap: _isLoading ? null : _rescheduleAll,
+            onTap: _isLoading || !notificationsEnabled ? null : _rescheduleAll,
           ),
 
           ListTile(
@@ -162,7 +192,9 @@ class _NotificationsSettingsScreenState
             title: const Text('Ver Pendientes'),
             subtitle: const Text('Notificaciones programadas'),
             trailing: const Icon(Iconsax.arrow_right_3),
-            onTap: () => _showPendingNotifications(notificationService),
+            onTap: notificationsEnabled
+                ? () => _showPendingNotifications(notificationService)
+                : null,
           ),
 
           ListTile(
@@ -177,7 +209,9 @@ class _NotificationsSettingsScreenState
             title: const Text('Cancelar Todas'),
             subtitle: const Text('Eliminar todas las notificaciones'),
             trailing: const Icon(Iconsax.arrow_right_3),
-            onTap: () => _cancelAll(notificationService),
+            onTap: notificationsEnabled
+                ? () => _cancelAll(notificationService)
+                : null,
           ),
 
           const SizedBox(height: AppSizes.spacing24),
@@ -270,7 +304,65 @@ class _NotificationsSettingsScreenState
     }
   }
 
-  Future<void> _rescheduleAll() async {
+  Future<void> _toggleNotifications(
+    bool enabled,
+    NotificationService service,
+  ) async {
+    setState(() => _isLoading = true);
+
+    try {
+      await ref
+          .read(appSettingsProvider.notifier)
+          .updateNotificationsEnabled(enabled);
+
+      if (!enabled) {
+        await service.cancelAllNotifications();
+      } else {
+        await _rescheduleAll(showFeedback: false);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              enabled
+                  ? 'Notificaciones activadas y reprogramadas'
+                  : 'Notificaciones desactivadas',
+            ),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(ErrorUtils.toUserMessage(e)),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _rescheduleAll({bool showFeedback = true}) async {
+    final notificationsEnabled =
+        ref.read(appSettingsProvider).notificationsEnabled;
+    if (!notificationsEnabled) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Activa las notificaciones para reprogramarlas'),
+          ),
+        );
+      }
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -288,7 +380,7 @@ class _NotificationsSettingsScreenState
         }
       }
 
-      if (mounted) {
+      if (mounted && showFeedback) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -298,10 +390,10 @@ class _NotificationsSettingsScreenState
         );
       }
     } catch (e) {
-      if (mounted) {
+      if (mounted && showFeedback) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text(ErrorUtils.toUserMessage(e)),
             backgroundColor: AppColors.error,
           ),
         );

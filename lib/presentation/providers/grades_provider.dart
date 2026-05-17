@@ -1,13 +1,21 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import '../../domain/usecases/calculate_course_grades_usecase.dart';
 import '../../data/models/grade_model.dart';
 import '../../data/repositories/grade_repository.dart';
 
 final gradeRepositoryProvider = Provider((ref) => GradeRepository());
+final calculateCourseGradesUseCaseProvider =
+    Provider((ref) => CalculateCourseGradesUseCase());
 
 final gradesProvider =
     StateNotifierProvider<GradesNotifier, List<Grade>>((ref) {
-  return GradesNotifier(ref.read(gradeRepositoryProvider));
+  return GradesNotifier(
+    ref.read(gradeRepositoryProvider),
+    ref.read(calculateCourseGradesUseCaseProvider),
+  );
 });
 
 final gradesByCourseProvider =
@@ -20,17 +28,21 @@ final gradesByCourseProvider =
 final courseAverageProvider = Provider.family<double?, String>((ref, courseId) {
   final grades = ref.watch(gradesByCourseProvider(courseId));
   if (grades.isEmpty) return null;
-
-  final repository = ref.read(gradeRepositoryProvider);
-  return repository.calculateAverage(courseId);
+  final useCase = ref.read(calculateCourseGradesUseCaseProvider);
+  return useCase.calculateAverage(grades);
 });
 
 class GradesNotifier extends StateNotifier<List<Grade>> {
   final GradeRepository _repository;
+  final CalculateCourseGradesUseCase _gradesUseCase;
   final _uuid = const Uuid();
+  StreamSubscription? _gradesSubscription;
 
-  GradesNotifier(this._repository) : super([]) {
+  GradesNotifier(this._repository, this._gradesUseCase) : super([]) {
     _loadGrades();
+    _gradesSubscription = _repository.watch().listen((_) {
+      _loadGrades();
+    });
   }
 
   void _loadGrades() {
@@ -47,12 +59,8 @@ class GradesNotifier extends StateNotifier<List<Grade>> {
     DateTime? date,
     String? notes,
   }) async {
-    // Validar que el peso total no exceda 100%
     final existingGrades = state.where((g) => g.courseId == courseId).toList();
-    final totalWeight = existingGrades.fold<double>(
-      0,
-      (sum, grade) => sum + grade.weight,
-    );
+    final totalWeight = _gradesUseCase.totalWeight(existingGrades);
 
     if (totalWeight + weight > 100) {
       throw Exception(
@@ -78,14 +86,10 @@ class GradesNotifier extends StateNotifier<List<Grade>> {
   }
 
   Future<void> updateGrade(Grade grade) async {
-    // Validar que el peso total no exceda 100% (excluyendo la nota actual)
     final existingGrades = state
         .where((g) => g.courseId == grade.courseId && g.id != grade.id)
         .toList();
-    final totalWeight = existingGrades.fold<double>(
-      0,
-      (sum, g) => sum + g.weight,
-    );
+    final totalWeight = _gradesUseCase.totalWeight(existingGrades);
 
     if (totalWeight + grade.weight > 100) {
       throw Exception(
@@ -106,7 +110,8 @@ class GradesNotifier extends StateNotifier<List<Grade>> {
   }
 
   double? getCourseAverage(String courseId) {
-    return _repository.calculateAverage(courseId);
+    final grades = state.where((grade) => grade.courseId == courseId).toList();
+    return _gradesUseCase.calculateAverage(grades);
   }
 
   double? getMinimumNeeded({
@@ -114,15 +119,22 @@ class GradesNotifier extends StateNotifier<List<Grade>> {
     required double targetAverage,
     required double remainingWeight,
   }) {
-    return _repository.calculateMinimumNeeded(
-      courseId: courseId,
+    final grades = state.where((grade) => grade.courseId == courseId).toList();
+    return _gradesUseCase.calculateMinimumNeeded(
+      grades: grades,
       targetAverage: targetAverage,
       remainingWeight: remainingWeight,
     );
   }
 
   double getTotalWeight(String courseId) {
-    final grades = state.where((g) => g.courseId == courseId).toList();
-    return grades.fold<double>(0, (sum, grade) => sum + grade.weight);
+    final grades = state.where((grade) => grade.courseId == courseId).toList();
+    return _gradesUseCase.totalWeight(grades);
+  }
+
+  @override
+  void dispose() {
+    _gradesSubscription?.cancel();
+    super.dispose();
   }
 }

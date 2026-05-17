@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter/foundation.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz;
 import '../../data/models/evaluation_model.dart' as models;
@@ -49,7 +50,7 @@ class NotificationService {
     // TODO: Navegar a la evaluación específica
     final payload = response.payload;
     if (payload != null) {
-      print('Notification tapped with payload: $payload');
+      debugPrint('Notification tapped with payload: $payload');
     }
   }
 

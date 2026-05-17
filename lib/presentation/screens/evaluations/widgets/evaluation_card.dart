@@ -5,6 +5,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../data/models/evaluation_model.dart';
+import '../../../../data/models/course_model.dart';
 import '../../../providers/evaluations_provider.dart';
 import '../../../providers/courses_provider.dart';
 import '../evaluation_detail_screen.dart';
@@ -21,10 +22,18 @@ class EvaluationCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final course = ref.watch(coursesProvider).firstWhere(
-          (c) => c.id == evaluation.courseId,
-          orElse: () => throw Exception('Course not found'),
-        );
+    final courses = ref.watch(coursesProvider);
+    Course? course;
+    for (final item in courses) {
+      if (item.id == evaluation.courseId) {
+        course = item;
+        break;
+      }
+    }
+
+    if (course == null) {
+      return const SizedBox.shrink();
+    }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 

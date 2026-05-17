@@ -1,19 +1,27 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import '../../domain/usecases/calculate_evaluation_priority_usecase.dart';
 import '../../data/models/evaluation_model.dart';
 import '../../data/repositories/evaluation_repository.dart';
 import '../../core/services/notification_service.dart';
+import 'app_settings_provider.dart';
 import 'courses_provider.dart';
 
 final evaluationRepositoryProvider = Provider((ref) => EvaluationRepository());
 
 final notificationServiceProvider = Provider((ref) => NotificationService());
 
+final calculateEvaluationPriorityUseCaseProvider =
+    Provider((ref) => CalculateEvaluationPriorityUseCase());
+
 final evaluationsProvider =
     StateNotifierProvider<EvaluationsNotifier, List<Evaluation>>((ref) {
   return EvaluationsNotifier(
     ref.read(evaluationRepositoryProvider),
     ref.read(notificationServiceProvider),
+    ref.read(calculateEvaluationPriorityUseCaseProvider),
     ref,
   );
 });
@@ -33,15 +41,21 @@ final completedEvaluationsProvider = Provider<List<Evaluation>>((ref) {
 class EvaluationsNotifier extends StateNotifier<List<Evaluation>> {
   final EvaluationRepository _repository;
   final NotificationService _notificationService;
+  final CalculateEvaluationPriorityUseCase _calculatePriorityUseCase;
   final Ref _ref;
   final _uuid = const Uuid();
+  StreamSubscription? _evaluationsSubscription;
 
   EvaluationsNotifier(
     this._repository,
     this._notificationService,
+    this._calculatePriorityUseCase,
     this._ref,
   ) : super([]) {
     _loadEvaluations();
+    _evaluationsSubscription = _repository.watch().listen((_) {
+      _loadEvaluations();
+    });
   }
 
   void _loadEvaluations() {
@@ -57,8 +71,8 @@ class EvaluationsNotifier extends StateNotifier<List<Evaluation>> {
     Priority? priority,
     List<Subtask>? subtasks,
   }) async {
-    final calculatedPriority =
-        priority ?? _calculateSmartPriority(type, dueDate);
+    final calculatedPriority = priority ??
+        _calculatePriorityUseCase.execute(type: type, dueDate: dueDate);
 
     final evaluation = Evaluation(
       id: _uuid.v4(),
@@ -76,8 +90,7 @@ class EvaluationsNotifier extends StateNotifier<List<Evaluation>> {
     await _repository.add(evaluation);
     state = [...state, evaluation];
 
-    // Programar notificaciones
-    await _scheduleNotificationsForEvaluation(evaluation);
+    await _handleNotificationsForEvaluation(evaluation);
   }
 
   Future<void> updateEvaluation(Evaluation evaluation) async {
@@ -87,8 +100,7 @@ class EvaluationsNotifier extends StateNotifier<List<Evaluation>> {
         if (e.id == evaluation.id) evaluation else e,
     ];
 
-    // Re-programar notificaciones
-    await _scheduleNotificationsForEvaluation(evaluation);
+    await _handleNotificationsForEvaluation(evaluation);
   }
 
   Future<void> deleteEvaluation(String id) async {
@@ -100,11 +112,12 @@ class EvaluationsNotifier extends StateNotifier<List<Evaluation>> {
   }
 
   Future<void> toggleCompleted(String id) async {
-    final evaluation = state.firstWhere((e) => e.id == id);
+    final evaluation = getEvaluationById(id);
+    if (evaluation == null) return;
+
     if (evaluation.isCompleted) {
       await _repository.markAsPending(id);
-      // Re-programar notificaciones
-      await _scheduleNotificationsForEvaluation(evaluation);
+      await _handleNotificationsForEvaluation(evaluation);
     } else {
       await _repository.markAsCompleted(id);
       // Cancelar notificaciones al completar
@@ -115,7 +128,9 @@ class EvaluationsNotifier extends StateNotifier<List<Evaluation>> {
 
   Future<void> updateSubtask(
       String evaluationId, Subtask updatedSubtask) async {
-    final evaluation = state.firstWhere((e) => e.id == evaluationId);
+    final evaluation = getEvaluationById(evaluationId);
+    if (evaluation == null) return;
+
     final updatedSubtasks = evaluation.subtasks?.map((s) {
       return s.id == updatedSubtask.id ? updatedSubtask : s;
     }).toList();
@@ -136,45 +151,6 @@ class EvaluationsNotifier extends StateNotifier<List<Evaluation>> {
     return state.where((e) => e.courseId == courseId).toList();
   }
 
-  // Prioridad Inteligente
-  Priority _calculateSmartPriority(EvaluationType type, DateTime dueDate) {
-    final now = DateTime.now();
-    final daysUntilDue = dueDate.difference(now).inDays;
-
-    // Peso por tipo
-    int typeWeight = 0;
-    switch (type) {
-      case EvaluationType.exam:
-        typeWeight = 3;
-        break;
-      case EvaluationType.project:
-        typeWeight = 2;
-        break;
-      case EvaluationType.task:
-        typeWeight = 1;
-        break;
-    }
-
-    // Peso por cercanía
-    int dateWeight = 0;
-    if (daysUntilDue <= 1) {
-      dateWeight = 4;
-    } else if (daysUntilDue <= 3) {
-      dateWeight = 3;
-    } else if (daysUntilDue <= 7) {
-      dateWeight = 2;
-    } else if (daysUntilDue <= 14) {
-      dateWeight = 1;
-    }
-
-    final totalWeight = typeWeight + dateWeight;
-
-    if (totalWeight >= 6) return Priority.critical;
-    if (totalWeight >= 4) return Priority.high;
-    if (totalWeight >= 2) return Priority.medium;
-    return Priority.low;
-  }
-
   Evaluation? getEvaluationById(String id) {
     try {
       return state.firstWhere((e) => e.id == id);
@@ -183,20 +159,36 @@ class EvaluationsNotifier extends StateNotifier<List<Evaluation>> {
     }
   }
 
-  /// Programar notificaciones para una evaluación
-  Future<void> _scheduleNotificationsForEvaluation(
-      Evaluation evaluation) async {
-    // Obtener información del curso
-    final courses = _ref.read(activeCoursesProvider);
-    final course = courses.firstWhere(
-      (c) => c.id == evaluation.courseId,
-      orElse: () => courses.first,
-    );
+  Future<void> _handleNotificationsForEvaluation(Evaluation evaluation) async {
+    try {
+      final settings = _ref.read(appSettingsProvider);
+      if (!settings.notificationsEnabled) {
+        await _notificationService.cancelEvaluationNotifications(evaluation.id);
+        return;
+      }
 
-    await _notificationService.scheduleEvaluationNotification(
-      evaluation: evaluation,
-      courseCode: course.code,
-      courseName: course.name,
-    );
+      final course = _ref.read(coursesProvider.notifier).getCourseById(
+            evaluation.courseId,
+          );
+
+      if (course == null) {
+        await _notificationService.cancelEvaluationNotifications(evaluation.id);
+        return;
+      }
+
+      await _notificationService.scheduleEvaluationNotification(
+        evaluation: evaluation,
+        courseCode: course.code,
+        courseName: course.name,
+      );
+    } catch (_) {
+      // No bloquear flujos principales por errores de notificaciones.
+    }
+  }
+
+  @override
+  void dispose() {
+    _evaluationsSubscription?.cancel();
+    super.dispose();
   }
 }

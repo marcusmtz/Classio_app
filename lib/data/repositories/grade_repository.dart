@@ -1,9 +1,12 @@
 import 'package:hive/hive.dart';
+import '../../domain/usecases/calculate_course_grades_usecase.dart';
 import '../models/grade_model.dart';
 import '../local/hive_service.dart';
 
 class GradeRepository {
   final Box<Grade> _box = HiveService.gradesBoxInstance;
+  final CalculateCourseGradesUseCase _gradesUseCase =
+      CalculateCourseGradesUseCase();
 
   List<Grade> getAll() {
     return _box.values.toList();
@@ -29,22 +32,18 @@ class GradeRepository {
     await _box.delete(id);
   }
 
-  double calculateAverage(String courseId) {
+  Future<int> deleteByCourse(String courseId) async {
     final grades = getByCourse(courseId);
-    if (grades.isEmpty) return 0.0;
 
-    double weightedSum = 0.0;
-    double totalWeight = 0.0;
-
-    for (var grade in grades) {
-      // Convertir score a escala 1-7 si es necesario
-      final normalizedScore = (grade.score / grade.maxScore) * 7.0;
-      weightedSum += normalizedScore * (grade.weight / 100);
-      totalWeight += grade.weight;
+    for (final grade in grades) {
+      await _box.delete(grade.id);
     }
 
-    if (totalWeight == 0) return 0.0;
-    return weightedSum / (totalWeight / 100);
+    return grades.length;
+  }
+
+  double calculateAverage(String courseId) {
+    return _gradesUseCase.calculateAverage(getByCourse(courseId));
   }
 
   double? calculateMinimumNeeded({
@@ -52,23 +51,11 @@ class GradeRepository {
     required double targetAverage,
     required double remainingWeight,
   }) {
-    if (remainingWeight <= 0) return null;
-
-    final grades = getByCourse(courseId);
-
-    double currentWeightedSum = 0.0;
-    for (var grade in grades) {
-      final normalizedScore = (grade.score / grade.maxScore) * 7.0;
-      currentWeightedSum += normalizedScore * (grade.weight / 100);
-    }
-
-    // targetAverage = (currentWeightedSum + minimumNeeded * remainingWeight/100) / 1.0
-    // targetAverage = currentWeightedSum + minimumNeeded * remainingWeight/100
-    // minimumNeeded * remainingWeight/100 = targetAverage - currentWeightedSum
-    // minimumNeeded = (targetAverage - currentWeightedSum) / (remainingWeight/100)
-
-    final neededWeightedSum = targetAverage - currentWeightedSum;
-    return neededWeightedSum / (remainingWeight / 100);
+    return _gradesUseCase.calculateMinimumNeeded(
+      grades: getByCourse(courseId),
+      targetAverage: targetAverage,
+      remainingWeight: remainingWeight,
+    );
   }
 
   Stream<BoxEvent> watch() {
