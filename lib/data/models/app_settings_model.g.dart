@@ -29,13 +29,14 @@ class AppSettingsAdapter extends TypeAdapter<AppSettings> {
       criticalWeekEnabled: fields[9] as bool,
       classReminderEnabled: fields[10] as bool,
       lowGradeAlertEnabled: fields[11] as bool,
+      hasSeenTour: fields[12] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, AppSettings obj) {
     writer
-      ..writeByte(12)
+      ..writeByte(13)
       ..writeByte(0)
       ..write(obj.themeMode)
       ..writeByte(1)
@@ -59,7 +60,9 @@ class AppSettingsAdapter extends TypeAdapter<AppSettings> {
       ..writeByte(10)
       ..write(obj.classReminderEnabled)
       ..writeByte(11)
-      ..write(obj.lowGradeAlertEnabled);
+      ..write(obj.lowGradeAlertEnabled)
+      ..writeByte(12)
+      ..write(obj.hasSeenTour);
   }
 
   @override

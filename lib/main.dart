@@ -12,6 +12,7 @@ import 'presentation/providers/smart_notifications_provider.dart';
 import 'data/models/app_settings_model.dart' as models;
 import 'presentation/screens/main_screen.dart';
 import 'presentation/screens/onboarding/welcome_screen.dart';
+import 'presentation/screens/onboarding/intro_slides_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -87,15 +88,26 @@ class _ClassioAppState extends ConsumerState<ClassioApp> {
         break;
     }
 
+    // Determinar la pantalla inicial
+    Widget homeScreen;
+    if (settings.userName == null || settings.userName!.trim().isEmpty) {
+      // Usuario nuevo - mostrar pantalla de bienvenida
+      homeScreen = const WelcomeScreen();
+    } else if (!settings.hasSeenTour) {
+      // Usuario con nombre pero sin tour - mostrar intro slides
+      homeScreen = const IntroSlidesScreen();
+    } else {
+      // Usuario completo - ir directo a la app
+      homeScreen = const MainScreen();
+    }
+
     return MaterialApp(
       title: AppStrings.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
-      home: (settings.userName == null || settings.userName!.trim().isEmpty)
-          ? const WelcomeScreen()
-          : const MainScreen(),
+      home: homeScreen,
     );
   }
 }

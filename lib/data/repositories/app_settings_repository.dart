@@ -106,4 +106,12 @@ class AppSettingsRepository {
       lastUpdated: DateTime.now(),
     ));
   }
+
+  Future<void> updateHasSeenTour(bool hasSeen) async {
+    final settings = getSettings();
+    await saveSettings(settings.copyWith(
+      hasSeenTour: hasSeen,
+      lastUpdated: DateTime.now(),
+    ));
+  }
 }

@@ -5,7 +5,7 @@ import 'package:iconsax/iconsax.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../providers/app_settings_provider.dart';
-import '../main_screen.dart';
+import 'intro_slides_screen.dart';
 
 class WelcomeScreen extends ConsumerStatefulWidget {
   const WelcomeScreen({super.key});
@@ -38,7 +38,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
 
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (_, animation, __) => const MainScreen(),
+        pageBuilder: (_, animation, __) => const IntroSlidesScreen(),
         transitionsBuilder: (_, animation, __, child) => FadeTransition(
           opacity: animation,
           child: child,

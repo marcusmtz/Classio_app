@@ -75,4 +75,9 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
     await _repository.updateLowGradeAlertEnabled(enabled);
     state = state.copyWith(lowGradeAlertEnabled: enabled);
   }
+
+  Future<void> updateHasSeenTour(bool hasSeen) async {
+    await _repository.updateHasSeenTour(hasSeen);
+    state = state.copyWith(hasSeenTour: hasSeen);
+  }
 }

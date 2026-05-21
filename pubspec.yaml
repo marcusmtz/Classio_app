@@ -33,6 +33,10 @@ dependencies:
   flutter_local_notifications: ^17.2.3
   timezone: ^0.9.4
 
+  # Tour y Onboarding
+  intro_slider: ^4.2.1
+  tutorial_coach_mark: ^1.2.11
+
   # Utilidades
   uuid: ^4.5.1
   equatable: ^2.0.5

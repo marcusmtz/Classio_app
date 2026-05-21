@@ -51,6 +51,9 @@ class AppSettings extends Equatable {
   @HiveField(11)
   final bool lowGradeAlertEnabled;
 
+  @HiveField(12)
+  final bool hasSeenTour;
+
   const AppSettings({
     this.themeMode = ThemeMode.system,
     this.notificationsEnabled = true,
@@ -64,6 +67,7 @@ class AppSettings extends Equatable {
     this.criticalWeekEnabled = true,
     this.classReminderEnabled = true,
     this.lowGradeAlertEnabled = true,
+    this.hasSeenTour = false,
   });
 
   AppSettings copyWith({
@@ -79,6 +83,7 @@ class AppSettings extends Equatable {
     bool? criticalWeekEnabled,
     bool? classReminderEnabled,
     bool? lowGradeAlertEnabled,
+    bool? hasSeenTour,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -93,6 +98,7 @@ class AppSettings extends Equatable {
       criticalWeekEnabled: criticalWeekEnabled ?? this.criticalWeekEnabled,
       classReminderEnabled: classReminderEnabled ?? this.classReminderEnabled,
       lowGradeAlertEnabled: lowGradeAlertEnabled ?? this.lowGradeAlertEnabled,
+      hasSeenTour: hasSeenTour ?? this.hasSeenTour,
     );
   }
 
@@ -110,5 +116,6 @@ class AppSettings extends Equatable {
         criticalWeekEnabled,
         classReminderEnabled,
         lowGradeAlertEnabled,
+        hasSeenTour,
       ];
 }
