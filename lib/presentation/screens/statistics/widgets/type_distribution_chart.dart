@@ -17,12 +17,17 @@ class TypeDistributionChart extends ConsumerWidget {
       return _buildEmptyState(context);
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(AppSizes.spacing20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: isDark ? AppColors.darkSurface : AppColors.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
-        border: Border.all(color: AppColors.surfaceVariant),
+        border: Border.all(
+          color:
+              isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,13 +156,17 @@ class TypeDistributionChart extends ConsumerWidget {
   }
 
   Widget _buildEmptyState(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSizes.spacing20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: isDark ? AppColors.darkSurface : AppColors.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
-        border: Border.all(color: AppColors.surfaceVariant),
+        border: Border.all(
+          color:
+              isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,

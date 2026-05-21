@@ -9,6 +9,7 @@ import '../../../core/utils/error_utils.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/services/data_import_service.dart';
 import '../../../data/models/app_settings_model.dart' as models;
 import '../../../data/local/hive_service.dart';
 import '../../providers/app_settings_provider.dart';
@@ -32,6 +33,36 @@ class SettingsScreen extends ConsumerWidget {
       ),
       body: ListView(
         children: [
+          // Apariencia
+          _buildSectionHeader(context, 'Perfil'),
+          Consumer(
+            builder: (context, ref, child) {
+              final settings = ref.watch(appSettingsProvider);
+              return ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Iconsax.user, color: AppColors.secondary),
+                ),
+                title: const Text('Tu nombre'),
+                subtitle: Text(
+                  (settings.userName != null &&
+                          settings.userName!.trim().isNotEmpty)
+                      ? settings.userName!
+                      : 'Sin configurar',
+                ),
+                trailing: const Icon(Iconsax.arrow_right_3),
+                onTap: () =>
+                    _showEditNameDialog(context, ref, settings.userName ?? ''),
+              );
+            },
+          ),
+
+          const Divider(height: 1),
+
           // Apariencia
           _buildSectionHeader(context, 'Apariencia'),
           ListTile(
@@ -190,6 +221,20 @@ class SettingsScreen extends ConsumerWidget {
             leading: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
+                color: AppColors.info.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Iconsax.import, color: AppColors.info),
+            ),
+            title: const Text('Importar Datos'),
+            subtitle: const Text('Restaurar desde copia de seguridad'),
+            trailing: const Icon(Iconsax.arrow_right_3),
+            onTap: () => _showImportDataDialog(context, ref),
+          ),
+          ListTile(
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
                 color: AppColors.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -229,7 +274,7 @@ class SettingsScreen extends ConsumerWidget {
               child: const Icon(Iconsax.user, color: AppColors.secondary),
             ),
             title: const Text('Desarrollador'),
-            subtitle: const Text('Marcos-Mart18'),
+            subtitle: const Text('marcusmtz'),
             trailing: const Icon(Iconsax.arrow_right_3),
             onTap: () => _showDeveloperDialog(context),
           ),
@@ -270,7 +315,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Hecho con ❤️ por Marcos-Mart18',
+                  'Hecho con ❤️ por marcusmtz',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textTertiary,
                       ),
@@ -306,6 +351,60 @@ class SettingsScreen extends ConsumerWidget {
       case models.ThemeMode.system:
         return 'Sistema';
     }
+  }
+
+  void _showEditNameDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String currentName,
+  ) {
+    final controller = TextEditingController(text: currentName);
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Tu nombre'),
+        content: Form(
+          key: formKey,
+          child: TextFormField(
+            controller: controller,
+            autofocus: true,
+            textCapitalization: TextCapitalization.words,
+            decoration: const InputDecoration(
+              labelText: 'Nombre',
+              hintText: 'Ej: Carlos, María...',
+              prefixIcon: Icon(Iconsax.user),
+            ),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Por favor ingresa tu nombre';
+              }
+              if (value.trim().length < 2) {
+                return 'El nombre debe tener al menos 2 caracteres';
+              }
+              return null;
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              if (!formKey.currentState!.validate()) return;
+              await ref
+                  .read(appSettingsProvider.notifier)
+                  .updateUserName(controller.text.trim());
+              if (context.mounted) Navigator.pop(context);
+            },
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
+    ).then((_) => controller.dispose());
   }
 
   void _showThemeDialog(
@@ -467,7 +566,7 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Marcos-Mart18',
+                    'marcusmtz',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -494,8 +593,8 @@ class SettingsScreen extends ConsumerWidget {
               context,
               icon: Iconsax.global,
               label: 'GitHub',
-              value: '@Marcos-Mart18',
-              onTap: () => _launchURL('https://github.com/Marcos-Mart18'),
+              value: '@marcusmtz',
+              onTap: () => _launchURL('https://github.com/marcusmtz'),
             ),
           ],
         ),
@@ -807,7 +906,9 @@ class SettingsScreen extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.surfaceVariant,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.darkSurfaceVariant
+              : AppColors.surfaceVariant,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
@@ -846,4 +947,419 @@ class SettingsScreen extends ConsumerWidget {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
+
+  // ============================================
+  // IMPORTAR DATOS
+  // ============================================
+
+  void _showImportDataDialog(BuildContext context, WidgetRef ref) {
+    final controller = TextEditingController();
+    bool isLoading = false;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.info.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Iconsax.import, color: AppColors.info),
+              ),
+              const SizedBox(width: 12),
+              const Text('Importar Datos'),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.warning.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: AppColors.warning.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Iconsax.warning_2,
+                          color: AppColors.warning,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Esta acción reemplazará todos tus datos actuales',
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: AppColors.warning,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Pega el JSON exportado:',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: controller,
+                    maxLines: 10,
+                    decoration: InputDecoration(
+                      hintText:
+                          '{\n  "app": "Classio",\n  "version": "1.0.0",\n  ...\n}',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      filled: true,
+                    ),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontFamily: 'monospace',
+                        ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Icon(
+                        Iconsax.info_circle,
+                        size: 16,
+                        color: AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Usa el JSON generado desde "Exportar Datos"',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isLoading ? null : () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton.icon(
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      if (controller.text.trim().isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Por favor pega el JSON'),
+                            backgroundColor: AppColors.error,
+                          ),
+                        );
+                        return;
+                      }
+
+                      setState(() => isLoading = true);
+
+                      try {
+                        // Validar y parsear JSON
+                        final result =
+                            await DataImportService.validateAndParseJson(
+                          controller.text.trim(),
+                        );
+
+                        if (!result.success) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content:
+                                    Text(result.error ?? 'Error desconocido'),
+                                backgroundColor: AppColors.error,
+                              ),
+                            );
+                          }
+                          setState(() => isLoading = false);
+                          return;
+                        }
+
+                        // Mostrar confirmación con resumen
+                        if (context.mounted) {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Confirmar Importación'),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Se importarán los siguientes datos:',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _buildImportSummaryItem(
+                                    context,
+                                    Iconsax.book,
+                                    'Cursos',
+                                    result.courses.length,
+                                  ),
+                                  _buildImportSummaryItem(
+                                    context,
+                                    Iconsax.calendar,
+                                    'Horarios',
+                                    result.schedules.length,
+                                  ),
+                                  _buildImportSummaryItem(
+                                    context,
+                                    Iconsax.task_square,
+                                    'Evaluaciones',
+                                    result.evaluations.length,
+                                  ),
+                                  _buildImportSummaryItem(
+                                    context,
+                                    Iconsax.clipboard_text,
+                                    'Notas',
+                                    result.grades.length,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.error
+                                          .withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          Iconsax.danger,
+                                          color: AppColors.error,
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            'Tus datos actuales serán reemplazados',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(
+                                                  color: AppColors.error,
+                                                ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                  child: const Text('Cancelar'),
+                                ),
+                                FilledButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: AppColors.info,
+                                  ),
+                                  child: const Text('Importar'),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (confirm != true) {
+                            setState(() => isLoading = false);
+                            return;
+                          }
+                        }
+
+                        // Realizar importación
+                        await _performImport(context, ref, result);
+
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '✅ ${result.totalItems} elementos importados correctamente',
+                              ),
+                              backgroundColor: AppColors.success,
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error: ${e.toString()}'),
+                              backgroundColor: AppColors.error,
+                            ),
+                          );
+                        }
+                      } finally {
+                        if (context.mounted) {
+                          setState(() => isLoading = false);
+                        }
+                      }
+                    },
+              icon: isLoading
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Iconsax.import),
+              label: Text(isLoading ? 'Importando...' : 'Importar'),
+            ),
+          ],
+        ),
+      ),
+    ).then((_) => controller.dispose());
+  }
+
+  Widget _buildImportSummaryItem(
+    BuildContext context,
+    IconData icon,
+    String label,
+    int count,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: AppColors.primary),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              count.toString(),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _performImport(
+    BuildContext context,
+    WidgetRef ref,
+    ImportResult result,
+  ) async {
+    // 1. Limpiar datos actuales
+    await HiveService.clearAll();
+
+    // 2. Importar cursos
+    for (final course in result.courses) {
+      await ref.read(coursesProvider.notifier).addCourse(
+            name: course.name,
+            code: course.code,
+            colorValue: course.colorValue,
+          );
+    }
+
+    // 3. Importar horarios
+    for (final schedule in result.schedules) {
+      await ref.read(scheduleProvider.notifier).addSchedule(
+            courseId: schedule.courseId,
+            dayOfWeek: schedule.dayOfWeek,
+            startTime: schedule.startTime,
+            endTime: schedule.endTime,
+            location: schedule.location,
+          );
+    }
+
+    // 4. Importar evaluaciones
+    for (final evaluation in result.evaluations) {
+      await ref.read(evaluationsProvider.notifier).addEvaluation(
+            courseId: evaluation.courseId,
+            title: evaluation.title,
+            description: evaluation.description,
+            type: evaluation.type,
+            dueDate: evaluation.dueDate,
+            priority: evaluation.isPriorityManual ? evaluation.priority : null,
+          );
+    }
+
+    // 5. Importar notas
+    for (final grade in result.grades) {
+      await ref.read(gradesProvider.notifier).addGrade(
+            courseId: grade.courseId,
+            title: grade.title,
+            type: grade.type,
+            score: grade.score,
+            maxScore: grade.maxScore,
+            weight: grade.weight,
+            date: grade.date,
+            notes: grade.notes,
+          );
+    }
+
+    // 6. Importar configuración (si existe)
+    if (result.settings != null) {
+      final settings = result.settings!;
+      await ref
+          .read(appSettingsProvider.notifier)
+          .updateThemeMode(settings.themeMode);
+      await ref
+          .read(appSettingsProvider.notifier)
+          .updateNotificationsEnabled(settings.notificationsEnabled);
+      await ref
+          .read(appSettingsProvider.notifier)
+          .updateShowSaturday(settings.showSaturday);
+      await ref
+          .read(appSettingsProvider.notifier)
+          .updateShowSunday(settings.showSunday);
+      if (settings.userName != null) {
+        await ref
+            .read(appSettingsProvider.notifier)
+            .updateUserName(settings.userName!);
+      }
+    }
+
+    // Los providers se actualizan automáticamente al agregar datos
+  }
 }
+

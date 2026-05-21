@@ -66,4 +66,44 @@ class AppSettingsRepository {
       lastUpdated: DateTime.now(),
     ));
   }
+
+  Future<void> updateUserName(String name) async {
+    final settings = getSettings();
+    await saveSettings(settings.copyWith(
+      userName: name,
+      lastUpdated: DateTime.now(),
+    ));
+  }
+
+  Future<void> updateDailySummaryEnabled(bool enabled) async {
+    final settings = getSettings();
+    await saveSettings(settings.copyWith(
+      dailySummaryEnabled: enabled,
+      lastUpdated: DateTime.now(),
+    ));
+  }
+
+  Future<void> updateCriticalWeekEnabled(bool enabled) async {
+    final settings = getSettings();
+    await saveSettings(settings.copyWith(
+      criticalWeekEnabled: enabled,
+      lastUpdated: DateTime.now(),
+    ));
+  }
+
+  Future<void> updateClassReminderEnabled(bool enabled) async {
+    final settings = getSettings();
+    await saveSettings(settings.copyWith(
+      classReminderEnabled: enabled,
+      lastUpdated: DateTime.now(),
+    ));
+  }
+
+  Future<void> updateLowGradeAlertEnabled(bool enabled) async {
+    final settings = getSettings();
+    await saveSettings(settings.copyWith(
+      lowGradeAlertEnabled: enabled,
+      lastUpdated: DateTime.now(),
+    ));
+  }
 }

@@ -5,16 +5,23 @@ import 'package:uuid/uuid.dart';
 import '../../domain/usecases/validate_schedule_usecase.dart';
 import '../../data/models/class_schedule_model.dart';
 import '../../data/repositories/class_schedule_repository.dart';
+import '../../core/services/notification_service.dart';
+import 'app_settings_provider.dart';
+import 'courses_provider.dart';
 
 final scheduleRepositoryProvider = Provider((ref) => ClassScheduleRepository());
 final validateScheduleUseCaseProvider =
     Provider((ref) => ValidateScheduleUseCase());
+final scheduleNotificationServiceProvider =
+    Provider((ref) => NotificationService());
 
 final scheduleProvider =
     StateNotifierProvider<ScheduleNotifier, List<ClassSchedule>>((ref) {
   return ScheduleNotifier(
     ref.read(scheduleRepositoryProvider),
     ref.read(validateScheduleUseCaseProvider),
+    ref.read(scheduleNotificationServiceProvider),
+    ref,
   );
 });
 
@@ -28,13 +35,17 @@ final scheduleByDayProvider =
 class ScheduleNotifier extends StateNotifier<List<ClassSchedule>> {
   final ClassScheduleRepository _repository;
   final ValidateScheduleUseCase _validateScheduleUseCase;
+  final NotificationService _notificationService;
+  final Ref _ref;
   final DateTime Function() _nowProvider;
   final _uuid = const Uuid();
   StreamSubscription? _scheduleSubscription;
 
   ScheduleNotifier(
     this._repository,
-    this._validateScheduleUseCase, {
+    this._validateScheduleUseCase,
+    this._notificationService,
+    this._ref, {
     DateTime Function()? nowProvider,
   })  : _nowProvider = nowProvider ?? DateTime.now,
         super([]) {
@@ -79,7 +90,9 @@ class ScheduleNotifier extends StateNotifier<List<ClassSchedule>> {
     );
 
     await _repository.add(schedule);
-    state = [...state, schedule];
+    // El stream watch() dispara _loadSchedules() automáticamente
+
+    await _handleNotificationsForSchedule(schedule);
   }
 
   Future<void> updateSchedule(ClassSchedule schedule) async {
@@ -101,15 +114,15 @@ class ScheduleNotifier extends StateNotifier<List<ClassSchedule>> {
     }
 
     await _repository.update(schedule);
-    state = [
-      for (final s in state)
-        if (s.id == schedule.id) schedule else s,
-    ];
+    // El stream watch() dispara _loadSchedules() automáticamente
+
+    await _handleNotificationsForSchedule(schedule);
   }
 
   Future<void> deleteSchedule(String id) async {
     await _repository.delete(id);
-    state = state.where((s) => s.id != id).toList();
+    await _notificationService.cancelClassReminder(id);
+    _loadSchedules();
   }
 
   List<ClassSchedule> getSchedulesByCourse(String courseId) {
@@ -192,6 +205,33 @@ class ScheduleNotifier extends StateNotifier<List<ClassSchedule>> {
         return DayOfWeek.sunday;
       default:
         return DayOfWeek.monday;
+    }
+  }
+
+  Future<void> _handleNotificationsForSchedule(ClassSchedule schedule) async {
+    try {
+      final settings = _ref.read(appSettingsProvider);
+      if (!settings.notificationsEnabled || !settings.classReminderEnabled) {
+        await _notificationService.cancelClassReminder(schedule.id);
+        return;
+      }
+
+      final course = _ref.read(coursesProvider.notifier).getCourseById(
+            schedule.courseId,
+          );
+
+      if (course == null) {
+        await _notificationService.cancelClassReminder(schedule.id);
+        return;
+      }
+
+      await _notificationService.scheduleClassReminder(
+        schedule: schedule,
+        courseName: course.name,
+        courseCode: course.code,
+      );
+    } catch (_) {
+      // No bloquear flujos principales por errores de notificaciones.
     }
   }
 

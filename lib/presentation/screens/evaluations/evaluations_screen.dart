@@ -46,6 +46,7 @@ class _EvaluationsScreenState extends ConsumerState<EvaluationsScreen>
     final filteredEvaluations = ref.watch(filteredEvaluationsProvider);
     final filters = ref.watch(evaluationFiltersProvider);
     final hasFilters = filters.hasActiveFilters;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Usar evaluaciones filtradas solo en la vista de lista
     final listEvaluations = hasFilters
@@ -53,7 +54,7 @@ class _EvaluationsScreenState extends ConsumerState<EvaluationsScreen>
         : ref.watch(pendingEvaluationsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
       appBar: AppBar(
         title: const Text(AppStrings.evaluations),
         actions: [
@@ -252,6 +253,7 @@ class _EvaluationsScreenState extends ConsumerState<EvaluationsScreen>
   }
 
   Widget _buildDayEvaluations(List<Evaluation> allEvaluations) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final dayEvaluations = allEvaluations.where((e) {
       return e.dueDate.year == _selectedDay.year &&
           e.dueDate.month == _selectedDay.month &&
@@ -266,13 +268,16 @@ class _EvaluationsScreenState extends ConsumerState<EvaluationsScreen>
             Icon(
               Iconsax.calendar_tick,
               size: 64,
-              color: AppColors.textTertiary,
+              color:
+                  isDark ? AppColors.darkTextSecondary : AppColors.textTertiary,
             ),
             const SizedBox(height: 16),
             Text(
               'No hay evaluaciones este día',
               style: TextStyle(
-                color: AppColors.textSecondary,
+                color: isDark
+                    ? AppColors.darkTextSecondary
+                    : AppColors.textSecondary,
                 fontSize: 16,
               ),
             ),
@@ -294,6 +299,8 @@ class _EvaluationsScreenState extends ConsumerState<EvaluationsScreen>
   }
 
   Widget _buildListView(List<Evaluation> evaluations, bool hasFilters) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     if (evaluations.isEmpty) {
       return Center(
         child: Column(
@@ -302,7 +309,8 @@ class _EvaluationsScreenState extends ConsumerState<EvaluationsScreen>
             Icon(
               hasFilters ? Iconsax.search_normal : Iconsax.task_square,
               size: 80,
-              color: AppColors.textTertiary,
+              color:
+                  isDark ? AppColors.darkTextSecondary : AppColors.textTertiary,
             ),
             const SizedBox(height: 24),
             Text(
@@ -312,7 +320,9 @@ class _EvaluationsScreenState extends ConsumerState<EvaluationsScreen>
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
+                color: isDark
+                    ? AppColors.darkTextSecondary
+                    : AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 8),
@@ -322,7 +332,9 @@ class _EvaluationsScreenState extends ConsumerState<EvaluationsScreen>
                   : 'Agrega tu primera evaluación',
               style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textTertiary,
+                color: isDark
+                    ? AppColors.darkTextSecondary
+                    : AppColors.textTertiary,
               ),
             ),
             if (hasFilters) ...[

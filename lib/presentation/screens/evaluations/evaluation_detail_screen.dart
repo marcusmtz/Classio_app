@@ -46,16 +46,27 @@ class _EvaluationDetailScreenState
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? AppColors.darkBackground
+          : AppColors.background,
       appBar: AppBar(
         title: const Text('Detalles'),
         actions: [
-          IconButton(
-            onPressed: () => _toggleCompleted(evaluation),
-            icon: Icon(
-              evaluation.isCompleted
-                  ? Iconsax.tick_circle5
-                  : Iconsax.tick_circle,
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: SizedBox(
+              width: 40,
+              height: 40,
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                onPressed: () => _toggleCompleted(evaluation),
+                icon: Icon(
+                  evaluation.isCompleted
+                      ? Iconsax.tick_circle5
+                      : Iconsax.tick_circle,
+                  color: evaluation.isCompleted ? AppColors.success : null,
+                ),
+              ),
             ),
           ),
         ],
@@ -91,7 +102,7 @@ class _EvaluationDetailScreenState
         gradient: LinearGradient(
           colors: [
             courseColor,
-            courseColor.withOpacity(0.7),
+            courseColor.withValues(alpha: 0.7),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
@@ -145,7 +156,7 @@ class _EvaluationDetailScreenState
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Icon(icon, color: Colors.white, size: 28),
@@ -153,10 +164,12 @@ class _EvaluationDetailScreenState
   }
 
   Widget _buildInfoSection(Evaluation evaluation) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -209,9 +222,14 @@ class _EvaluationDetailScreenState
     required String value,
     Color? valueColor,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Row(
       children: [
-        Icon(icon, size: 20, color: AppColors.textSecondary),
+        Icon(icon,
+            size: 20,
+            color:
+                isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -221,7 +239,9 @@ class _EvaluationDetailScreenState
                 label,
                 style: TextStyle(
                   fontSize: 12,
-                  color: AppColors.textSecondary,
+                  color: isDark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 4),
@@ -230,7 +250,10 @@ class _EvaluationDetailScreenState
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: valueColor ?? AppColors.textPrimary,
+                  color: valueColor ??
+                      (isDark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.textPrimary),
                 ),
               ),
             ],
@@ -241,10 +264,12 @@ class _EvaluationDetailScreenState
   }
 
   Widget _buildDescriptionSection(Evaluation evaluation) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -259,14 +284,20 @@ class _EvaluationDetailScreenState
         children: [
           Row(
             children: [
-              Icon(Iconsax.note, size: 20, color: AppColors.textSecondary),
+              Icon(Iconsax.note,
+                  size: 20,
+                  color: isDark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.textSecondary),
               const SizedBox(width: 8),
-              const Text(
+              Text(
                 'Descripción',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: isDark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.textPrimary,
                 ),
               ),
             ],
@@ -276,7 +307,9 @@ class _EvaluationDetailScreenState
             evaluation.description!,
             style: TextStyle(
               fontSize: 14,
-              color: AppColors.textSecondary,
+              color: isDark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.textSecondary,
               height: 1.5,
             ),
           ),
@@ -286,13 +319,14 @@ class _EvaluationDetailScreenState
   }
 
   Widget _buildSubtasksSection(Evaluation evaluation) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final subtasks = evaluation.subtasks ?? [];
     final progress = evaluation.progress;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -308,14 +342,19 @@ class _EvaluationDetailScreenState
           Row(
             children: [
               Icon(Iconsax.task_square,
-                  size: 20, color: AppColors.textSecondary),
+                  size: 20,
+                  color: isDark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.textSecondary),
               const SizedBox(width: 8),
-              const Text(
+              Text(
                 'Subtareas',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: isDark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.textPrimary,
                 ),
               ),
               const Spacer(),
@@ -335,7 +374,9 @@ class _EvaluationDetailScreenState
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 8,
-              backgroundColor: AppColors.surfaceVariant,
+              backgroundColor: isDark
+                  ? AppColors.darkSurfaceVariant
+                  : AppColors.surfaceVariant,
               valueColor: const AlwaysStoppedAnimation(AppColors.success),
             ),
           ),
@@ -349,6 +390,8 @@ class _EvaluationDetailScreenState
   }
 
   Widget _buildSubtaskItem(Evaluation evaluation, Subtask subtask) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
@@ -371,8 +414,12 @@ class _EvaluationDetailScreenState
               style: TextStyle(
                 fontSize: 14,
                 color: subtask.isCompleted
-                    ? AppColors.textTertiary
-                    : AppColors.textPrimary,
+                    ? (isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.textTertiary)
+                    : (isDark
+                        ? AppColors.darkTextPrimary
+                        : AppColors.textPrimary),
                 decoration: subtask.isCompleted
                     ? TextDecoration.lineThrough
                     : TextDecoration.none,
@@ -390,15 +437,49 @@ class _EvaluationDetailScreenState
   }
 
   Widget _buildAddSubtaskField(Evaluation evaluation) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Row(
       children: [
         Expanded(
           child: TextField(
             controller: _subtaskController,
+            style: TextStyle(
+              color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+            ),
             decoration: InputDecoration(
               hintText: 'Nueva subtarea...',
+              hintStyle: TextStyle(
+                color: isDark
+                    ? AppColors.darkTextSecondary
+                    : AppColors.textTertiary,
+              ),
+              filled: true,
+              fillColor: isDark
+                  ? AppColors.darkSurfaceVariant
+                  : AppColors.surfaceVariant,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: isDark
+                      ? AppColors.darkSurfaceVariant
+                      : AppColors.surfaceVariant,
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: isDark
+                      ? AppColors.darkSurfaceVariant
+                      : AppColors.surfaceVariant,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: AppColors.primary,
+                  width: 2,
+                ),
               ),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,

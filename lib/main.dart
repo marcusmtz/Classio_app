@@ -8,8 +8,10 @@ import 'core/constants/app_strings.dart';
 import 'data/local/hive_service.dart';
 import 'core/services/notification_service.dart';
 import 'presentation/providers/app_settings_provider.dart';
+import 'presentation/providers/smart_notifications_provider.dart';
 import 'data/models/app_settings_model.dart' as models;
 import 'presentation/screens/main_screen.dart';
+import 'presentation/screens/onboarding/welcome_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,11 +44,34 @@ void main() async {
   runApp(const ProviderScope(child: ClassioApp()));
 }
 
-class ClassioApp extends ConsumerWidget {
+class ClassioApp extends ConsumerStatefulWidget {
   const ClassioApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ClassioApp> createState() => _ClassioAppState();
+}
+
+class _ClassioAppState extends ConsumerState<ClassioApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Inicializar notificaciones inteligentes después de que el widget esté montado
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeSmartNotifications();
+    });
+  }
+
+  Future<void> _initializeSmartNotifications() async {
+    try {
+      final smartNotifications = ref.read(smartNotificationsServiceProvider);
+      await smartNotifications.updateAllSmartNotifications();
+    } catch (_) {
+      // No bloquear la app si falla la inicialización de notificaciones
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final settings = ref.watch(appSettingsProvider);
 
     material.ThemeMode themeMode;
@@ -68,7 +93,9 @@ class ClassioApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
-      home: const MainScreen(),
+      home: (settings.userName == null || settings.userName!.trim().isEmpty)
+          ? const WelcomeScreen()
+          : const MainScreen(),
     );
   }
 }

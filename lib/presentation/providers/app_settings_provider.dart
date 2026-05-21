@@ -50,4 +50,29 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
     await _repository.updateShowSunday(show);
     state = state.copyWith(showSunday: show);
   }
+
+  Future<void> updateUserName(String name) async {
+    await _repository.updateUserName(name.trim());
+    state = state.copyWith(userName: name.trim());
+  }
+
+  Future<void> updateDailySummaryEnabled(bool enabled) async {
+    await _repository.updateDailySummaryEnabled(enabled);
+    state = state.copyWith(dailySummaryEnabled: enabled);
+  }
+
+  Future<void> updateCriticalWeekEnabled(bool enabled) async {
+    await _repository.updateCriticalWeekEnabled(enabled);
+    state = state.copyWith(criticalWeekEnabled: enabled);
+  }
+
+  Future<void> updateClassReminderEnabled(bool enabled) async {
+    await _repository.updateClassReminderEnabled(enabled);
+    state = state.copyWith(classReminderEnabled: enabled);
+  }
+
+  Future<void> updateLowGradeAlertEnabled(bool enabled) async {
+    await _repository.updateLowGradeAlertEnabled(enabled);
+    state = state.copyWith(lowGradeAlertEnabled: enabled);
+  }
 }

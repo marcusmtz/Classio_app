@@ -9,6 +9,7 @@ import '../../../data/models/evaluation_model.dart';
 import '../../providers/evaluations_provider.dart';
 import '../../providers/courses_provider.dart';
 import '../../providers/critical_week_provider.dart';
+import '../../providers/app_settings_provider.dart';
 import '../evaluations/evaluation_detail_screen.dart';
 import '../statistics/statistics_screen.dart';
 import '../settings/settings_screen.dart';
@@ -20,6 +21,7 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final pendingEvaluations = ref.watch(pendingEvaluationsProvider);
+    final overdueEvaluations = ref.watch(overdueEvaluationsProvider);
     final courses = ref.watch(activeCoursesProvider);
     final criticalWeekInfo = ref.watch(criticalWeekProvider);
 
@@ -35,7 +37,7 @@ class HomeScreen extends ConsumerWidget {
         child: CustomScrollView(
           slivers: [
             // Header
-            SliverToBoxAdapter(child: _buildHeader(context)),
+            SliverToBoxAdapter(child: _buildHeader(context, ref)),
 
             // Critical Week Banner
             if (criticalWeekInfo.isCritical)
@@ -60,7 +62,8 @@ class HomeScreen extends ConsumerWidget {
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   _buildTodaySummary(
-                          context, todayEvaluations.length, courses.length)
+                          context, todayEvaluations.length, courses.length,
+                          overdueCount: overdueEvaluations.length)
                       .animate()
                       .fadeIn(duration: 400.ms)
                       .slideY(begin: 0.2, end: 0),
@@ -80,6 +83,12 @@ class HomeScreen extends ConsumerWidget {
                     pendingEvaluations.length,
                     criticalWeekInfo.totalEvaluations,
                   ).animate(delay: 200.ms).fadeIn(duration: 400.ms),
+                  if (overdueEvaluations.isNotEmpty) ...[
+                    const SizedBox(height: AppSizes.spacing24),
+                    _buildOverdueEvaluations(context, ref, overdueEvaluations)
+                        .animate(delay: 250.ms)
+                        .fadeIn(duration: 400.ms),
+                  ],
                   if (todayEvaluations.isNotEmpty) ...[
                     const SizedBox(height: AppSizes.spacing24),
                     _buildTodayEvaluations(context, ref, todayEvaluations)
@@ -97,17 +106,21 @@ class HomeScreen extends ConsumerWidget {
 
   String _getGreeting() {
     final hour = DateTime.now().hour;
-    if (hour < 12) return '¡Buenos días!';
-    if (hour < 19) return '¡Buenas tardes!';
-    return '¡Buenas noches!';
+    if (hour < 12) return '¡Buenos días';
+    if (hour < 19) return '¡Buenas tardes';
+    return '¡Buenas noches';
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, WidgetRef ref) {
     final now = DateTime.now();
     final dateFormat = DateFormat('EEEE, d \'de\' MMMM', 'es_ES');
     final formattedDate = dateFormat.format(now);
     final capitalizedDate =
         formattedDate[0].toUpperCase() + formattedDate.substring(1);
+    final userName = ref.watch(appSettingsProvider).userName;
+    final greeting = userName != null && userName.trim().isNotEmpty
+        ? '${_getGreeting()}, $userName!'
+        : '${_getGreeting()}!';
 
     return Container(
       padding: const EdgeInsets.all(AppSizes.spacing20),
@@ -122,7 +135,7 @@ class HomeScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _getGreeting(),
+                      greeting,
                       style: Theme.of(context).textTheme.displaySmall?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -252,7 +265,8 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _buildTodaySummary(
-      BuildContext context, int todayCount, int coursesCount) {
+      BuildContext context, int todayCount, int coursesCount,
+      {int overdueCount = 0}) {
     return Container(
       padding: const EdgeInsets.all(AppSizes.spacing20),
       decoration: BoxDecoration(
@@ -347,6 +361,35 @@ class HomeScreen extends ConsumerWidget {
                   ],
                 ),
               ),
+              if (overdueCount > 0) ...[
+                Container(
+                  width: 1,
+                  height: 40,
+                  color: Colors.white.withValues(alpha: 0.3),
+                ),
+                const SizedBox(width: AppSizes.spacing16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$overdueCount',
+                        style:
+                            Theme.of(context).textTheme.displayMedium?.copyWith(
+                                  color: const Color(0xFFFFD166),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                      ),
+                      Text(
+                        overdueCount == 1 ? 'Vencida' : 'Vencidas',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Colors.white.withValues(alpha: 0.9),
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         ],
@@ -596,6 +639,142 @@ class HomeScreen extends ConsumerWidget {
           Text(label, style: Theme.of(context).textTheme.labelSmall),
         ],
       ),
+    );
+  }
+
+  Widget _buildOverdueEvaluations(
+      BuildContext context, WidgetRef ref, List<Evaluation> evaluations) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    const overdueColor = Color(0xFFFF6B6B);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppSizes.spacing12),
+          child: Row(
+            children: [
+              const Icon(Iconsax.warning_2,
+                  size: AppSizes.iconSmall, color: overdueColor),
+              const SizedBox(width: AppSizes.spacing8),
+              Text(
+                'Evaluaciones Vencidas',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: overdueColor,
+                    ),
+              ),
+              const SizedBox(width: AppSizes.spacing8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppSizes.spacing8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: overdueColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(AppSizes.radiusFull),
+                ),
+                child: Text(
+                  '${evaluations.length}',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: overdueColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        ...evaluations.map((evaluation) {
+          final course = ref
+              .read(coursesProvider.notifier)
+              .getCourseById(evaluation.courseId);
+          if (course == null) return const SizedBox.shrink();
+
+          final daysOverdue =
+              DateTime.now().difference(evaluation.dueDate).inDays;
+          final overdueText = daysOverdue == 1
+              ? 'Venció hace 1 día'
+              : 'Venció hace $daysOverdue días';
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: AppSizes.spacing12),
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        EvaluationDetailScreen(evaluation: evaluation),
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+              child: Container(
+                padding: const EdgeInsets.all(AppSizes.spacing16),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkSurface : AppColors.surface,
+                  borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+                  border: Border.all(
+                    color: overdueColor.withValues(alpha: 0.4),
+                    width: 2,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 4,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: overdueColor,
+                        borderRadius:
+                            BorderRadius.circular(AppSizes.radiusSmall),
+                      ),
+                    ),
+                    const SizedBox(width: AppSizes.spacing12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            evaluation.title,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyLarge
+                                ?.copyWith(fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: AppSizes.spacing4),
+                          Text(
+                            course.name,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(color: AppColors.textSecondary),
+                          ),
+                          const SizedBox(height: AppSizes.spacing4),
+                          Text(
+                            overdueText,
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                  color: overdueColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(
+                      Iconsax.arrow_right_3,
+                      color: AppColors.textSecondary,
+                      size: AppSizes.iconSmall,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }),
+      ],
     );
   }
 

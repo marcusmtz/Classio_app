@@ -18,6 +18,7 @@ class ScheduleListView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(appSettingsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (schedules.isEmpty) {
       return Center(
@@ -27,13 +28,18 @@ class ScheduleListView extends ConsumerWidget {
             Icon(
               Icons.calendar_today_outlined,
               size: 80,
-              color: AppColors.textSecondary.withValues(alpha: 0.5),
+              color: (isDark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.textSecondary)
+                  .withValues(alpha: 0.5),
             ),
             const SizedBox(height: AppSizes.spacing16),
             Text(
               'No hay clases programadas',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.textSecondary,
                   ),
             ),
           ],
@@ -111,6 +117,7 @@ class ScheduleListView extends ConsumerWidget {
 
     final currentClass = ref.watch(scheduleProvider.notifier).getCurrentClass();
     final isCurrentClass = currentClass?.id == schedule.id;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSizes.spacing12),
@@ -147,12 +154,14 @@ class ScheduleListView extends ConsumerWidget {
           decoration: BoxDecoration(
             color: isCurrentClass
                 ? Color(course.colorValue).withValues(alpha: 0.1)
-                : AppColors.surface,
+                : (isDark ? AppColors.darkSurface : AppColors.surface),
             borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
             border: Border.all(
               color: isCurrentClass
                   ? Color(course.colorValue)
-                  : AppColors.surfaceVariant,
+                  : (isDark
+                      ? AppColors.darkSurfaceVariant
+                      : AppColors.surfaceVariant),
               width: isCurrentClass ? 2 : 1,
             ),
           ),
@@ -212,14 +221,18 @@ class ScheduleListView extends ConsumerWidget {
                         Icon(
                           Iconsax.clock,
                           size: AppSizes.iconSmall,
-                          color: AppColors.textSecondary,
+                          color: isDark
+                              ? AppColors.darkTextSecondary
+                              : AppColors.textSecondary,
                         ),
                         const SizedBox(width: AppSizes.spacing8),
                         Text(
                           '${schedule.startTime.format()} - ${schedule.endTime.format()}',
                           style:
                               Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: AppColors.textSecondary,
+                                    color: isDark
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.textSecondary,
                                   ),
                         ),
                       ],
@@ -231,7 +244,9 @@ class ScheduleListView extends ConsumerWidget {
                           Icon(
                             Iconsax.location,
                             size: AppSizes.iconSmall,
-                            color: AppColors.textSecondary,
+                            color: isDark
+                                ? AppColors.darkTextSecondary
+                                : AppColors.textSecondary,
                           ),
                           const SizedBox(width: AppSizes.spacing8),
                           Text(
@@ -240,7 +255,9 @@ class ScheduleListView extends ConsumerWidget {
                                 .textTheme
                                 .bodyMedium
                                 ?.copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: isDark
+                                      ? AppColors.darkTextSecondary
+                                      : AppColors.textSecondary,
                                 ),
                           ),
                         ],

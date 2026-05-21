@@ -129,12 +129,16 @@ class SummaryCards extends StatelessWidget {
     required String value,
     required Color color,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(AppSizes.spacing16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: isDark ? AppColors.darkSurface : AppColors.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
-        border: Border.all(color: AppColors.surfaceVariant),
+        border: Border.all(
+          color:
+              isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
+        ),
       ),
       child: Column(
         children: [

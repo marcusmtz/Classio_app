@@ -131,6 +131,103 @@ class _NotificationsSettingsScreenState
 
           const SizedBox(height: AppSizes.spacing24),
 
+          // Notificaciones Inteligentes
+          Text(
+            'Notificaciones Inteligentes',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: AppSizes.spacing8),
+          Text(
+            'Recordatorios automáticos adicionales',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+          ),
+          const SizedBox(height: AppSizes.spacing12),
+
+          SwitchListTile(
+            secondary: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.info.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Iconsax.sun_1, color: AppColors.info),
+            ),
+            title: const Text('Resumen Diario'),
+            subtitle:
+                const Text('Resumen de evaluaciones cada mañana (8:00 AM)'),
+            value: settings.dailySummaryEnabled,
+            onChanged: notificationsEnabled
+                ? (value) => ref
+                    .read(appSettingsProvider.notifier)
+                    .updateDailySummaryEnabled(value)
+                : null,
+          ),
+
+          SwitchListTile(
+            secondary: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.warning.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Iconsax.danger, color: AppColors.warning),
+            ),
+            title: const Text('Semana Crítica'),
+            subtitle: const Text(
+                'Alerta cuando tengas 3+ evaluaciones en una semana'),
+            value: settings.criticalWeekEnabled,
+            onChanged: notificationsEnabled
+                ? (value) => ref
+                    .read(appSettingsProvider.notifier)
+                    .updateCriticalWeekEnabled(value)
+                : null,
+          ),
+
+          SwitchListTile(
+            secondary: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.secondary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Iconsax.teacher, color: AppColors.secondary),
+            ),
+            title: const Text('Recordatorio de Clase'),
+            subtitle: const Text('Notificación 10 minutos antes de cada clase'),
+            value: settings.classReminderEnabled,
+            onChanged: notificationsEnabled
+                ? (value) => ref
+                    .read(appSettingsProvider.notifier)
+                    .updateClassReminderEnabled(value)
+                : null,
+          ),
+
+          SwitchListTile(
+            secondary: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Iconsax.chart_fail, color: AppColors.error),
+            ),
+            title: const Text('Alerta de Nota Baja'),
+            subtitle:
+                const Text('Notificación inmediata al registrar nota < 4.0'),
+            value: settings.lowGradeAlertEnabled,
+            onChanged: notificationsEnabled
+                ? (value) => ref
+                    .read(appSettingsProvider.notifier)
+                    .updateLowGradeAlertEnabled(value)
+                : null,
+          ),
+
+          const SizedBox(height: AppSizes.spacing24),
+
           // Acciones
           Text(
             'Acciones',
@@ -220,7 +317,9 @@ class _NotificationsSettingsScreenState
           Container(
             padding: const EdgeInsets.all(AppSizes.spacing16),
             decoration: BoxDecoration(
-              color: AppColors.surfaceVariant,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.darkSurfaceVariant
+                  : AppColors.surfaceVariant,
               borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
             ),
             child: Column(

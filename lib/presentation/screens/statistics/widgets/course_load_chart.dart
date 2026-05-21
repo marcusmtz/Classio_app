@@ -18,13 +18,18 @@ class CourseLoadChart extends ConsumerWidget {
 
     // Tomar solo los primeros 5 cursos
     final topCourses = courseLoads.take(5).toList();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final labelColor = isDark ? Colors.white70 : Colors.black54;
 
     return Container(
       padding: const EdgeInsets.all(AppSizes.spacing20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: isDark ? AppColors.darkSurface : AppColors.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
-        border: Border.all(color: AppColors.surfaceVariant),
+        border: Border.all(
+          color:
+              isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,7 +85,6 @@ class CourseLoadChart extends ConsumerWidget {
                             return const SizedBox.shrink();
                           }
                           final course = topCourses[value.toInt()];
-                          // Mostrar solo las primeras 3 letras
                           final shortName = course.courseName.length > 8
                               ? '${course.courseName.substring(0, 8)}...'
                               : course.courseName;
@@ -88,9 +92,10 @@ class CourseLoadChart extends ConsumerWidget {
                             padding: const EdgeInsets.only(top: 8),
                             child: Text(
                               shortName,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w500,
+                                color: labelColor,
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -105,7 +110,10 @@ class CourseLoadChart extends ConsumerWidget {
                         getTitlesWidget: (value, meta) {
                           return Text(
                             value.toInt().toString(),
-                            style: const TextStyle(fontSize: 10),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: labelColor,
+                            ),
                           );
                         },
                       ),
@@ -156,13 +164,17 @@ class CourseLoadChart extends ConsumerWidget {
   }
 
   Widget _buildEmptyState(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSizes.spacing20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: isDark ? AppColors.darkSurface : AppColors.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
-        border: Border.all(color: AppColors.surfaceVariant),
+        border: Border.all(
+          color:
+              isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,

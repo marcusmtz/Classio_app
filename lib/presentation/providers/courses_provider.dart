@@ -79,15 +79,12 @@ class CoursesNotifier extends StateNotifier<List<Course>> {
     );
 
     await _repository.add(course);
-    state = [...state, course];
+    // El stream watch() dispara _loadCourses() automáticamente
   }
 
   Future<void> updateCourse(Course course) async {
     await _repository.update(course);
-    state = [
-      for (final c in state)
-        if (c.id == course.id) course else c,
-    ];
+    // El stream watch() dispara _loadCourses() automáticamente
   }
 
   Future<void> deleteCourse(String id) async {

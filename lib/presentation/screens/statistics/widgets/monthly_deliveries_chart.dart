@@ -32,13 +32,18 @@ class MonthlyDeliveriesChart extends ConsumerWidget {
     }).toList();
 
     final maxY = deliveries.values.reduce((a, b) => a > b ? a : b).toDouble();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final labelColor = isDark ? Colors.white70 : Colors.black54;
 
     return Container(
       padding: const EdgeInsets.all(AppSizes.spacing20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: isDark ? AppColors.darkSurface : AppColors.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
-        border: Border.all(color: AppColors.surfaceVariant),
+        border: Border.all(
+          color:
+              isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,7 +94,10 @@ class MonthlyDeliveriesChart extends ConsumerWidget {
                             padding: const EdgeInsets.only(top: 8),
                             child: Text(
                               value.toInt().toString(),
-                              style: const TextStyle(fontSize: 10),
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: labelColor,
+                              ),
                             ),
                           );
                         },
@@ -102,7 +110,10 @@ class MonthlyDeliveriesChart extends ConsumerWidget {
                         getTitlesWidget: (value, meta) {
                           return Text(
                             value.toInt().toString(),
-                            style: const TextStyle(fontSize: 10),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: labelColor,
+                            ),
                           );
                         },
                       ),
@@ -171,13 +182,17 @@ class MonthlyDeliveriesChart extends ConsumerWidget {
   }
 
   Widget _buildEmptyState(BuildContext context, String monthName) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSizes.spacing20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: isDark ? AppColors.darkSurface : AppColors.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
-        border: Border.all(color: AppColors.surfaceVariant),
+        border: Border.all(
+          color:
+              isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,

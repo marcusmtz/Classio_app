@@ -8,6 +8,7 @@ import '../../data/repositories/evaluation_repository.dart';
 import '../../core/services/notification_service.dart';
 import 'app_settings_provider.dart';
 import 'courses_provider.dart';
+import 'smart_notifications_provider.dart';
 
 final evaluationRepositoryProvider = Provider((ref) => EvaluationRepository());
 
@@ -30,6 +31,16 @@ final pendingEvaluationsProvider = Provider<List<Evaluation>>((ref) {
   final evals = ref.watch(evaluationsProvider);
   return evals.where((e) => !e.isCompleted).toList()
     ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
+});
+
+final overdueEvaluationsProvider = Provider<List<Evaluation>>((ref) {
+  final evals = ref.watch(evaluationsProvider);
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  return evals
+      .where((e) => !e.isCompleted && e.dueDate.isBefore(today))
+      .toList()
+    ..sort((a, b) => b.dueDate.compareTo(a.dueDate));
 });
 
 final completedEvaluationsProvider = Provider<List<Evaluation>>((ref) {
@@ -88,19 +99,22 @@ class EvaluationsNotifier extends StateNotifier<List<Evaluation>> {
     );
 
     await _repository.add(evaluation);
-    state = [...state, evaluation];
+    // El stream watch() dispara _loadEvaluations() automáticamente
 
     await _handleNotificationsForEvaluation(evaluation);
+
+    // Actualizar notificaciones inteligentes
+    _updateSmartNotifications();
   }
 
   Future<void> updateEvaluation(Evaluation evaluation) async {
     await _repository.update(evaluation);
-    state = [
-      for (final e in state)
-        if (e.id == evaluation.id) evaluation else e,
-    ];
+    // El stream watch() dispara _loadEvaluations() automáticamente
 
     await _handleNotificationsForEvaluation(evaluation);
+
+    // Actualizar notificaciones inteligentes
+    _updateSmartNotifications();
   }
 
   Future<void> deleteEvaluation(String id) async {
@@ -109,6 +123,9 @@ class EvaluationsNotifier extends StateNotifier<List<Evaluation>> {
 
     // Cancelar notificaciones
     await _notificationService.cancelEvaluationNotifications(id);
+
+    // Actualizar notificaciones inteligentes
+    _updateSmartNotifications();
   }
 
   Future<void> toggleCompleted(String id) async {
@@ -124,6 +141,9 @@ class EvaluationsNotifier extends StateNotifier<List<Evaluation>> {
       await _notificationService.cancelEvaluationNotifications(id);
     }
     _loadEvaluations();
+
+    // Actualizar notificaciones inteligentes
+    _updateSmartNotifications();
   }
 
   Future<void> updateSubtask(
@@ -183,6 +203,18 @@ class EvaluationsNotifier extends StateNotifier<List<Evaluation>> {
       );
     } catch (_) {
       // No bloquear flujos principales por errores de notificaciones.
+    }
+  }
+
+  void _updateSmartNotifications() {
+    try {
+      // Programar actualización de notificaciones inteligentes de forma asíncrona
+      Future.microtask(() async {
+        final smartNotifications = _ref.read(smartNotificationsServiceProvider);
+        await smartNotifications.updateAllSmartNotifications();
+      });
+    } catch (_) {
+      // No bloquear flujos principales
     }
   }
 

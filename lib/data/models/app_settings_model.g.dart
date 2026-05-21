@@ -24,13 +24,18 @@ class AppSettingsAdapter extends TypeAdapter<AppSettings> {
       lastUpdated: fields[4] as DateTime?,
       showSaturday: fields[5] as bool,
       showSunday: fields[6] as bool,
+      userName: fields[7] as String?,
+      dailySummaryEnabled: fields[8] as bool,
+      criticalWeekEnabled: fields[9] as bool,
+      classReminderEnabled: fields[10] as bool,
+      lowGradeAlertEnabled: fields[11] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, AppSettings obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(12)
       ..writeByte(0)
       ..write(obj.themeMode)
       ..writeByte(1)
@@ -44,7 +49,17 @@ class AppSettingsAdapter extends TypeAdapter<AppSettings> {
       ..writeByte(5)
       ..write(obj.showSaturday)
       ..writeByte(6)
-      ..write(obj.showSunday);
+      ..write(obj.showSunday)
+      ..writeByte(7)
+      ..write(obj.userName)
+      ..writeByte(8)
+      ..write(obj.dailySummaryEnabled)
+      ..writeByte(9)
+      ..write(obj.criticalWeekEnabled)
+      ..writeByte(10)
+      ..write(obj.classReminderEnabled)
+      ..writeByte(11)
+      ..write(obj.lowGradeAlertEnabled);
   }
 
   @override

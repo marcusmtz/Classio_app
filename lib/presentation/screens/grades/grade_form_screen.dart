@@ -292,11 +292,12 @@ class _GradeFormScreenState extends ConsumerState<GradeFormScreen> {
     final score = double.tryParse(_scoreController.text) ?? 0.0;
     final maxScore = double.tryParse(_maxScoreController.text) ?? 7.0;
     final percentage = maxScore > 0 ? (score / maxScore) * 100.0 : 0.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.all(AppSizes.spacing16),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
+        color: isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
         borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
       ),
       child: Column(
@@ -331,7 +332,8 @@ class _GradeFormScreenState extends ConsumerState<GradeFormScreen> {
             child: LinearProgressIndicator(
               value: (percentage / 100).clamp(0.0, 1.0),
               minHeight: 8,
-              backgroundColor: AppColors.surface,
+              backgroundColor:
+                  isDark ? AppColors.darkSurface : AppColors.surface,
               valueColor: AlwaysStoppedAnimation<Color>(
                 _getScoreColor(percentage),
               ),

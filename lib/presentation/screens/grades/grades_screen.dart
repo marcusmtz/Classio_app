@@ -326,7 +326,9 @@ class _GradeCalculatorSheetState extends ConsumerState<_GradeCalculatorSheet> {
           Container(
             padding: const EdgeInsets.all(AppSizes.spacing16),
             decoration: BoxDecoration(
-              color: AppColors.surfaceVariant,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.darkSurfaceVariant
+                  : AppColors.surfaceVariant,
               borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
             ),
             child: Column(

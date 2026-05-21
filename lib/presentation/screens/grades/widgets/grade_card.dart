@@ -50,7 +50,9 @@ class GradeCard extends ConsumerWidget {
         child: Container(
           padding: const EdgeInsets.all(AppSizes.spacing16),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkSurface
+                : AppColors.surface,
             borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
             border: Border.all(
               color: Color(course.colorValue).withValues(alpha: 0.3),
@@ -209,7 +211,9 @@ class GradeCard extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(AppSizes.spacing12),
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceVariant,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? AppColors.darkSurfaceVariant
+                        : AppColors.surfaceVariant,
                     borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
                   ),
                   child: Row(

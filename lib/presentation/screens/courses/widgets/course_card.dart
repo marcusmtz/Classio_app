@@ -57,10 +57,14 @@ class CourseCard extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(AppSizes.spacing16),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.darkSurface
+                  : AppColors.surface,
               borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
               border: Border.all(
-                color: AppColors.surfaceVariant,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkSurfaceVariant
+                    : AppColors.surfaceVariant,
                 width: 1,
               ),
             ),
@@ -82,7 +86,7 @@ class CourseCard extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
                   ),
                   child: Center(

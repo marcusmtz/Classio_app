@@ -57,9 +57,10 @@ class _EvaluationFormScreenState extends ConsumerState<EvaluationFormScreen> {
   @override
   Widget build(BuildContext context) {
     final courses = ref.watch(activeCoursesProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
       appBar: AppBar(
         title: Text(
           widget.evaluation == null
@@ -152,7 +153,7 @@ class _EvaluationFormScreenState extends ConsumerState<EvaluationFormScreen> {
             _buildSection(
               title: 'Tipo y Fecha',
               children: [
-                _buildTypeSelector(),
+                _buildTypeSelector(context),
                 const SizedBox(height: 16),
                 Row(
                   children: [
@@ -171,13 +172,13 @@ class _EvaluationFormScreenState extends ConsumerState<EvaluationFormScreen> {
             _buildSection(
               title: 'Prioridad',
               children: [
-                _buildPrioritySelector(),
+                _buildPrioritySelector(context),
                 if (_selectedPriority == null) ...[
                   const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.info.withOpacity(0.1),
+                      color: AppColors.info.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -227,15 +228,16 @@ class _EvaluationFormScreenState extends ConsumerState<EvaluationFormScreen> {
     required String title,
     required List<Widget> children,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 12),
@@ -244,10 +246,11 @@ class _EvaluationFormScreenState extends ConsumerState<EvaluationFormScreen> {
     );
   }
 
-  Widget _buildTypeSelector() {
+  Widget _buildTypeSelector(BuildContext context) {
     return Row(
       children: [
         _buildTypeChip(
+          context,
           label: 'Examen',
           icon: Iconsax.document_text,
           type: EvaluationType.exam,
@@ -255,6 +258,7 @@ class _EvaluationFormScreenState extends ConsumerState<EvaluationFormScreen> {
         ),
         const SizedBox(width: 8),
         _buildTypeChip(
+          context,
           label: 'Tarea',
           icon: Iconsax.task,
           type: EvaluationType.task,
@@ -262,6 +266,7 @@ class _EvaluationFormScreenState extends ConsumerState<EvaluationFormScreen> {
         ),
         const SizedBox(width: 8),
         _buildTypeChip(
+          context,
           label: 'Proyecto',
           icon: Iconsax.folder,
           type: EvaluationType.project,
@@ -271,28 +276,33 @@ class _EvaluationFormScreenState extends ConsumerState<EvaluationFormScreen> {
     );
   }
 
-  Widget _buildTypeChip({
+  Widget _buildTypeChip(
+    BuildContext context, {
     required String label,
     required IconData icon,
     required EvaluationType type,
     required Color color,
   }) {
     final isSelected = _selectedType == type;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final unselectedBg = isDark ? AppColors.darkSurface : Colors.white;
+    final textColor =
+        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
 
     return Expanded(
       child: InkWell(
-        onTap: () {
-          setState(() {
-            _selectedType = type;
-          });
-        },
+        onTap: () => setState(() => _selectedType = type),
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected ? color.withOpacity(0.1) : Colors.white,
+            color: isSelected ? color.withValues(alpha: 0.1) : unselectedBg,
             border: Border.all(
-              color: isSelected ? color : AppColors.surfaceVariant,
+              color: isSelected
+                  ? color
+                  : (isDark
+                      ? AppColors.darkSurfaceVariant
+                      : AppColors.surfaceVariant),
               width: 2,
             ),
             borderRadius: BorderRadius.circular(12),
@@ -301,7 +311,7 @@ class _EvaluationFormScreenState extends ConsumerState<EvaluationFormScreen> {
             children: [
               Icon(
                 icon,
-                color: isSelected ? color : AppColors.textSecondary,
+                color: isSelected ? color : textColor,
                 size: 24,
               ),
               const SizedBox(height: 4),
@@ -310,7 +320,7 @@ class _EvaluationFormScreenState extends ConsumerState<EvaluationFormScreen> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? color : AppColors.textSecondary,
+                  color: isSelected ? color : textColor,
                 ),
               ),
             ],
@@ -321,6 +331,12 @@ class _EvaluationFormScreenState extends ConsumerState<EvaluationFormScreen> {
   }
 
   Widget _buildDateSelector() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textSecondary =
+        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final textPrimary =
+        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+
     return InkWell(
       onTap: () async {
         final date = await showDatePicker(
@@ -339,8 +355,14 @@ class _EvaluationFormScreenState extends ConsumerState<EvaluationFormScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: AppColors.surfaceVariant),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.darkSurface
+              : Colors.white,
+          border: Border.all(
+            color: isDark
+                ? AppColors.darkSurfaceVariant
+                : AppColors.surfaceVariant,
+          ),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -351,14 +373,14 @@ class _EvaluationFormScreenState extends ConsumerState<EvaluationFormScreen> {
                 Icon(
                   Iconsax.calendar,
                   size: 16,
-                  color: AppColors.textSecondary,
+                  color: textSecondary,
                 ),
                 const SizedBox(width: 6),
                 Text(
                   'Fecha',
                   style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: textSecondary,
                   ),
                 ),
               ],
@@ -366,10 +388,10 @@ class _EvaluationFormScreenState extends ConsumerState<EvaluationFormScreen> {
             const SizedBox(height: 8),
             Text(
               DateFormat('dd MMM yyyy', 'es').format(_selectedDate),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: textPrimary,
               ),
             ),
           ],
@@ -379,6 +401,12 @@ class _EvaluationFormScreenState extends ConsumerState<EvaluationFormScreen> {
   }
 
   Widget _buildTimeSelector() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textSecondary =
+        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final textPrimary =
+        isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+
     return InkWell(
       onTap: () async {
         final time = await showTimePicker(
@@ -395,8 +423,14 @@ class _EvaluationFormScreenState extends ConsumerState<EvaluationFormScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: AppColors.surfaceVariant),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.darkSurface
+              : Colors.white,
+          border: Border.all(
+            color: isDark
+                ? AppColors.darkSurfaceVariant
+                : AppColors.surfaceVariant,
+          ),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -407,14 +441,14 @@ class _EvaluationFormScreenState extends ConsumerState<EvaluationFormScreen> {
                 Icon(
                   Iconsax.clock,
                   size: 16,
-                  color: AppColors.textSecondary,
+                  color: textSecondary,
                 ),
                 const SizedBox(width: 6),
                 Text(
                   'Hora',
                   style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: textSecondary,
                   ),
                 ),
               ],
@@ -422,10 +456,10 @@ class _EvaluationFormScreenState extends ConsumerState<EvaluationFormScreen> {
             const SizedBox(height: 8),
             Text(
               _selectedTime.format(context),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: textPrimary,
               ),
             ),
           ],
@@ -434,38 +468,48 @@ class _EvaluationFormScreenState extends ConsumerState<EvaluationFormScreen> {
     );
   }
 
-  Widget _buildPrioritySelector() {
+  Widget _buildPrioritySelector(BuildContext context) {
     return Row(
       children: [
-        _buildPriorityChip('Baja', Priority.low, AppColors.priorityLow),
-        const SizedBox(width: 8),
-        _buildPriorityChip('Media', Priority.medium, AppColors.priorityMedium),
-        const SizedBox(width: 8),
-        _buildPriorityChip('Alta', Priority.high, AppColors.priorityHigh),
+        _buildPriorityChip(
+            context, 'Baja', Priority.low, AppColors.priorityLow),
         const SizedBox(width: 8),
         _buildPriorityChip(
-            'Crítica', Priority.critical, AppColors.priorityCritical),
+            context, 'Media', Priority.medium, AppColors.priorityMedium),
+        const SizedBox(width: 8),
+        _buildPriorityChip(
+            context, 'Alta', Priority.high, AppColors.priorityHigh),
+        const SizedBox(width: 8),
+        _buildPriorityChip(
+            context, 'Crítica', Priority.critical, AppColors.priorityCritical),
       ],
     );
   }
 
-  Widget _buildPriorityChip(String label, Priority priority, Color color) {
+  Widget _buildPriorityChip(
+      BuildContext context, String label, Priority priority, Color color) {
     final isSelected = _selectedPriority == priority;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final unselectedBg = isDark ? AppColors.darkSurface : Colors.white;
+    final textColor =
+        isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
 
     return Expanded(
       child: InkWell(
-        onTap: () {
-          setState(() {
-            _selectedPriority = isSelected ? null : priority;
-          });
-        },
+        onTap: () => setState(() {
+          _selectedPriority = isSelected ? null : priority;
+        }),
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected ? color.withOpacity(0.1) : Colors.white,
+            color: isSelected ? color.withValues(alpha: 0.1) : unselectedBg,
             border: Border.all(
-              color: isSelected ? color : AppColors.surfaceVariant,
+              color: isSelected
+                  ? color
+                  : (isDark
+                      ? AppColors.darkSurfaceVariant
+                      : AppColors.surfaceVariant),
               width: 2,
             ),
             borderRadius: BorderRadius.circular(12),
@@ -476,7 +520,7 @@ class _EvaluationFormScreenState extends ConsumerState<EvaluationFormScreen> {
             style: TextStyle(
               fontSize: 12,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              color: isSelected ? color : AppColors.textSecondary,
+              color: isSelected ? color : textColor,
             ),
           ),
         ),

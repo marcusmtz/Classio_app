@@ -77,9 +77,9 @@ class ScheduleGridView extends ConsumerWidget {
         return Container(
           padding: const EdgeInsets.symmetric(vertical: AppSizes.spacing8),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: Theme.of(context).colorScheme.surface,
             border: Border(
-              bottom: BorderSide(color: AppColors.surfaceVariant),
+              bottom: BorderSide(color: Theme.of(context).dividerColor),
             ),
           ),
           child: Row(
@@ -104,8 +104,9 @@ class ScheduleGridView extends ConsumerWidget {
                       style: TextStyle(
                         fontWeight:
                             isToday ? FontWeight.bold : FontWeight.normal,
-                        color:
-                            isToday ? AppColors.primary : AppColors.textPrimary,
+                        color: isToday
+                            ? AppColors.primary
+                            : Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ),
@@ -124,6 +125,9 @@ class ScheduleGridView extends ConsumerWidget {
     const hourHeight = 80.0;
 
     final settings = ref.watch(appSettingsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final gridBorderColor =
+        isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant;
 
     // Filtrar días según configuración
     final visibleDayIndices = <int>[];
@@ -169,7 +173,7 @@ class ScheduleGridView extends ConsumerWidget {
                         decoration: BoxDecoration(
                           border: Border(
                             left: BorderSide(
-                              color: AppColors.surfaceVariant,
+                              color: gridBorderColor,
                               width: 0.5,
                             ),
                           ),
@@ -182,7 +186,7 @@ class ScheduleGridView extends ConsumerWidget {
                               decoration: BoxDecoration(
                                 border: Border(
                                   top: BorderSide(
-                                    color: AppColors.surfaceVariant,
+                                    color: gridBorderColor,
                                     width: 0.5,
                                   ),
                                 ),

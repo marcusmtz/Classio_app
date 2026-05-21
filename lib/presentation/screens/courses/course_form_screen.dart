@@ -33,6 +33,14 @@ class _CourseFormScreenState extends ConsumerState<CourseFormScreen> {
       _codeController.text = widget.course!.code;
       _selectedColorValue = widget.course!.colorValue;
     }
+
+    // Agregar listeners para actualizar la vista previa en tiempo real
+    _nameController.addListener(() {
+      setState(() {});
+    });
+    _codeController.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
@@ -111,7 +119,9 @@ class _CourseFormScreenState extends ConsumerState<CourseFormScreen> {
             Container(
               padding: const EdgeInsets.all(AppSizes.spacing16),
               decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.darkSurfaceVariant
+                    : AppColors.surfaceVariant,
                 borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
               ),
               child: Column(
@@ -125,7 +135,9 @@ class _CourseFormScreenState extends ConsumerState<CourseFormScreen> {
                   Container(
                     padding: const EdgeInsets.all(AppSizes.spacing16),
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkSurface
+                          : AppColors.surface,
                       borderRadius:
                           BorderRadius.circular(AppSizes.radiusMedium),
                       border: Border.all(
@@ -139,7 +151,8 @@ class _CourseFormScreenState extends ConsumerState<CourseFormScreen> {
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
-                            color: Color(_selectedColorValue).withOpacity(0.1),
+                            color: Color(_selectedColorValue)
+                                .withValues(alpha: 0.1),
                             borderRadius:
                                 BorderRadius.circular(AppSizes.radiusMedium),
                           ),

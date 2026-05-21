@@ -199,15 +199,19 @@ class CourseDetailScreen extends ConsumerWidget {
 
   Widget _summaryCard(
       BuildContext context, IconData icon, String value, String label) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSizes.spacing8,
         vertical: AppSizes.spacing12,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: isDark ? AppColors.darkSurface : AppColors.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
-        border: Border.all(color: AppColors.surfaceVariant),
+        border: Border.all(
+          color:
+              isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
+        ),
       ),
       child: Column(
         children: [
@@ -241,13 +245,17 @@ class CourseDetailScreen extends ConsumerWidget {
   }
 
   Widget _buildEmptyCard(BuildContext context, String message) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSizes.spacing16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: isDark ? AppColors.darkSurface : AppColors.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
-        border: Border.all(color: AppColors.surfaceVariant),
+        border: Border.all(
+          color:
+              isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
+        ),
       ),
       child: Text(
         message,

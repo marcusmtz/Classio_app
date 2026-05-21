@@ -36,6 +36,21 @@ class AppSettings extends Equatable {
   @HiveField(6)
   final bool showSunday;
 
+  @HiveField(7)
+  final String? userName;
+
+  @HiveField(8)
+  final bool dailySummaryEnabled;
+
+  @HiveField(9)
+  final bool criticalWeekEnabled;
+
+  @HiveField(10)
+  final bool classReminderEnabled;
+
+  @HiveField(11)
+  final bool lowGradeAlertEnabled;
+
   const AppSettings({
     this.themeMode = ThemeMode.system,
     this.notificationsEnabled = true,
@@ -44,6 +59,11 @@ class AppSettings extends Equatable {
     this.lastUpdated,
     this.showSaturday = true,
     this.showSunday = true,
+    this.userName,
+    this.dailySummaryEnabled = true,
+    this.criticalWeekEnabled = true,
+    this.classReminderEnabled = true,
+    this.lowGradeAlertEnabled = true,
   });
 
   AppSettings copyWith({
@@ -54,6 +74,11 @@ class AppSettings extends Equatable {
     DateTime? lastUpdated,
     bool? showSaturday,
     bool? showSunday,
+    String? userName,
+    bool? dailySummaryEnabled,
+    bool? criticalWeekEnabled,
+    bool? classReminderEnabled,
+    bool? lowGradeAlertEnabled,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -63,6 +88,11 @@ class AppSettings extends Equatable {
       lastUpdated: lastUpdated ?? this.lastUpdated,
       showSaturday: showSaturday ?? this.showSaturday,
       showSunday: showSunday ?? this.showSunday,
+      userName: userName ?? this.userName,
+      dailySummaryEnabled: dailySummaryEnabled ?? this.dailySummaryEnabled,
+      criticalWeekEnabled: criticalWeekEnabled ?? this.criticalWeekEnabled,
+      classReminderEnabled: classReminderEnabled ?? this.classReminderEnabled,
+      lowGradeAlertEnabled: lowGradeAlertEnabled ?? this.lowGradeAlertEnabled,
     );
   }
 
@@ -75,5 +105,10 @@ class AppSettings extends Equatable {
         lastUpdated,
         showSaturday,
         showSunday,
+        userName,
+        dailySummaryEnabled,
+        criticalWeekEnabled,
+        classReminderEnabled,
+        lowGradeAlertEnabled,
       ];
 }

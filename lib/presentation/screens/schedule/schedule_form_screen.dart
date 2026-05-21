@@ -147,7 +147,11 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
               onTap: () => _selectTime(context, true),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
-                side: BorderSide(color: AppColors.surfaceVariant),
+                side: BorderSide(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkSurfaceVariant
+                      : AppColors.surfaceVariant,
+                ),
               ),
             ),
             const SizedBox(height: AppSizes.spacing16),
@@ -164,7 +168,11 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
               onTap: () => _selectTime(context, false),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
-                side: BorderSide(color: AppColors.surfaceVariant),
+                side: BorderSide(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.darkSurfaceVariant
+                      : AppColors.surfaceVariant,
+                ),
               ),
             ),
             const SizedBox(height: AppSizes.spacing16),
