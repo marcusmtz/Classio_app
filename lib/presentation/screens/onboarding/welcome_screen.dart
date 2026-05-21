@@ -39,11 +39,28 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         pageBuilder: (_, animation, __) => const IntroSlidesScreen(),
-        transitionsBuilder: (_, animation, __, child) => FadeTransition(
-          opacity: animation,
-          child: child,
-        ),
-        transitionDuration: const Duration(milliseconds: 500),
+        transitionsBuilder: (_, animation, __, child) {
+          // Animación combinada: fade + slide
+          const begin = Offset(1.0, 0.0); // Desde la derecha
+          const end = Offset.zero;
+          const curve = Curves.easeInOutCubic;
+
+          var slideTween = Tween(begin: begin, end: end).chain(
+            CurveTween(curve: curve),
+          );
+          var fadeTween = Tween<double>(begin: 0.0, end: 1.0).chain(
+            CurveTween(curve: curve),
+          );
+
+          return SlideTransition(
+            position: animation.drive(slideTween),
+            child: FadeTransition(
+              opacity: animation.drive(fadeTween),
+              child: child,
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 600),
       ),
     );
   }
