@@ -7,7 +7,7 @@ import '../../providers/statistics_provider.dart';
 import 'widgets/summary_cards.dart';
 import 'widgets/course_load_chart.dart';
 import 'widgets/type_distribution_chart.dart';
-import 'widgets/monthly_deliveries_chart.dart';
+import 'widgets/priority_distribution_chart.dart';
 
 class StatisticsScreen extends ConsumerWidget {
   const StatisticsScreen({super.key});
@@ -63,8 +63,8 @@ class StatisticsScreen extends ConsumerWidget {
 
             const SizedBox(height: AppSizes.spacing24),
 
-            // Gráfico: Entregas del mes
-            const MonthlyDeliveriesChart()
+            // Gráfico: Distribución de Prioridades
+            const PriorityDistributionChart()
                 .animate(delay: 400.ms)
                 .fadeIn(duration: 400.ms)
                 .slideY(begin: 0.2, end: 0),

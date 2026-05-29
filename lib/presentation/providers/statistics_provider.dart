@@ -206,3 +206,49 @@ final completionRateHistoryProvider = Provider<List<double>>((ref) {
 
   return rates;
 });
+
+/// Modelo para distribución de prioridades
+class PriorityDistribution {
+  final Priority priority;
+  final int count;
+  final double percentage;
+
+  const PriorityDistribution({
+    required this.priority,
+    required this.count,
+    required this.percentage,
+  });
+}
+
+/// Provider para distribución de prioridades (solo pendientes)
+final priorityDistributionProvider =
+    Provider<List<PriorityDistribution>>((ref) {
+  final pendingEvaluations = ref.watch(pendingEvaluationsProvider);
+
+  if (pendingEvaluations.isEmpty) {
+    return [];
+  }
+
+  final Map<Priority, int> distributionMap = {};
+
+  // Contar por prioridad
+  for (var eval in pendingEvaluations) {
+    distributionMap[eval.priority] = (distributionMap[eval.priority] ?? 0) + 1;
+  }
+
+  // Convertir a lista con porcentajes
+  final total = pendingEvaluations.length;
+  final distributions = <PriorityDistribution>[];
+
+  // Asegurar que todas las prioridades estén presentes
+  for (var priority in Priority.values) {
+    final count = distributionMap[priority] ?? 0;
+    distributions.add(PriorityDistribution(
+      priority: priority,
+      count: count,
+      percentage: total > 0 ? (count / total) * 100 : 0,
+    ));
+  }
+
+  return distributions;
+});

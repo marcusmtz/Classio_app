@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intro_slider/intro_slider.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../providers/app_settings_provider.dart';
 import '../main_screen.dart';
 
@@ -23,10 +22,10 @@ class _IntroSlidesScreenState extends ConsumerState<IntroSlidesScreen> {
       onSkipPress: _onSkipPress,
       renderSkipBtn: _renderSkipButton(),
       renderNextBtn: _renderNextButton(),
-      renderDoneBtn: _renderDoneButton(),
+      renderDoneBtn: const SizedBox.shrink(), // Ocultar botón "Comenzar"
 
       // Configuración de estilo
-      isShowDoneBtn: true,
+      isShowDoneBtn: false, // No mostrar botón en último slide
       isShowSkipBtn: true,
       isShowPrevBtn: false,
 
@@ -95,352 +94,443 @@ class _IntroSlidesScreenState extends ConsumerState<IntroSlidesScreen> {
   }
 
   Widget _buildWelcomeSlide(BuildContext context, Size size) {
-    return Container(
+    return SizedBox(
       width: size.width,
       height: size.height,
-      padding: const EdgeInsets.all(40),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Decorative circles
-          Stack(
-            alignment: Alignment.center,
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: size.width * 0.08,
+            vertical: size.height * 0.05,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.1),
-                ),
+              const Spacer(flex: 1),
+              // Decorative circles
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: size.width * 0.4,
+                    height: size.width * 0.4,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.1),
+                    ),
+                  ),
+                  Container(
+                    width: size.width * 0.3,
+                    height: size.width * 0.3,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.15),
+                    ),
+                  ),
+                  Container(
+                    width: size.width * 0.2,
+                    height: size.width * 0.2,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
+                    child: Icon(
+                      Iconsax.book_1,
+                      size: size.width * 0.1,
+                      color: const Color(0xFF6366F1),
+                    ),
+                  ),
+                ],
               ),
-              Container(
-                width: 150,
-                height: 150,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.15),
-                ),
-              ),
-              Container(
-                width: 100,
-                height: 100,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
+              const Spacer(flex: 1),
+              Text(
+                'Bienvenido a Classio',
+                style: TextStyle(
                   color: Colors.white,
+                  fontSize: size.width * 0.08,
+                  fontWeight: FontWeight.bold,
+                  height: 1.2,
                 ),
-                child: const Icon(
-                  Iconsax.book_1,
-                  size: 50,
-                  color: Color(0xFF6366F1),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: size.height * 0.02),
+              Text(
+                'Tu planificador académico universitario que funciona completamente offline',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: size.width * 0.04,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: size.height * 0.03),
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: size.width * 0.06,
+                  vertical: size.height * 0.015,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  'Organiza tu vida académica de forma simple',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: size.width * 0.032,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
+              const Spacer(flex: 1),
             ],
           ),
-          const SizedBox(height: 60),
-          const Text(
-            'Bienvenido a Classio',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 36,
-              fontWeight: FontWeight.bold,
-              height: 1.2,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Tu planificador académico universitario que funciona completamente offline',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.9),
-              fontSize: 18,
-              height: 1.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 40),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.3),
-                width: 1,
-              ),
-            ),
-            child: const Text(
-              'Organiza tu vida académica de forma simple',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildOrganizationSlide(BuildContext context, Size size) {
-    return Container(
+    final cardSize = size.width * 0.22;
+
+    return SizedBox(
       width: size.width,
       height: size.height,
-      padding: const EdgeInsets.all(40),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Grid of feature cards
-          Row(
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: size.width * 0.08,
+            vertical: size.height * 0.05,
+          ),
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildFeatureCard(Iconsax.calendar, 'Horarios', Colors.white),
-              const SizedBox(width: 16),
-              _buildFeatureCard(Iconsax.task_square, 'Tareas', Colors.white),
+              const Spacer(flex: 1),
+              // Grid of feature cards
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildFeatureCard(
+                      Iconsax.calendar, 'Horarios', Colors.white, cardSize),
+                  SizedBox(width: size.width * 0.04),
+                  _buildFeatureCard(
+                      Iconsax.task_square, 'Tareas', Colors.white, cardSize),
+                ],
+              ),
+              SizedBox(height: size.height * 0.02),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildFeatureCard(Iconsax.clipboard_text, 'Exámenes',
+                      Colors.white, cardSize),
+                  SizedBox(width: size.width * 0.04),
+                  _buildFeatureCard(
+                      Iconsax.chart, 'Notas', Colors.white, cardSize),
+                ],
+              ),
+              const Spacer(flex: 1),
+              Text(
+                'Organiza tu Vida Académica',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: size.width * 0.07,
+                  fontWeight: FontWeight.bold,
+                  height: 1.2,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: size.height * 0.02),
+              Text(
+                'Gestiona tus horarios de clase, evaluaciones, tareas y proyectos. Calcula tus notas y mantén todo bajo control en un solo lugar',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: size.width * 0.037,
+                  height: 1.6,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const Spacer(flex: 1),
             ],
           ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildFeatureCard(
-                  Iconsax.clipboard_text, 'Exámenes', Colors.white),
-              const SizedBox(width: 16),
-              _buildFeatureCard(Iconsax.chart, 'Notas', Colors.white),
-            ],
-          ),
-          const SizedBox(height: 60),
-          const Text(
-            'Organiza tu Vida Académica',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              height: 1.2,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Gestiona tus horarios de clase, evaluaciones, tareas y proyectos. Calcula tus notas y mantén todo bajo control en un solo lugar',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.9),
-              fontSize: 16,
-              height: 1.6,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildNotificationsSlide(BuildContext context, Size size) {
-    return Container(
+    return SizedBox(
       width: size.width,
       height: size.height,
-      padding: const EdgeInsets.all(40),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Notification bell with rings
-          Stack(
-            alignment: Alignment.center,
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: size.width * 0.08,
+            vertical: size.height * 0.05,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 180,
-                height: 180,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.3),
-                    width: 2,
+              const Spacer(flex: 1),
+              // Notification bell with rings
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: size.width * 0.36,
+                    height: size.width * 0.36,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        width: 2,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              Container(
-                width: 140,
-                height: 140,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.4),
-                    width: 2,
+                  Container(
+                    width: size.width * 0.28,
+                    height: size.width * 0.28,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.4),
+                        width: 2,
+                      ),
+                    ),
                   ),
-                ),
+                  Container(
+                    width: size.width * 0.2,
+                    height: size.width * 0.2,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
+                    child: Icon(
+                      Iconsax.notification,
+                      size: size.width * 0.1,
+                      color: const Color(0xFFEC4899),
+                    ),
+                  ),
+                ],
               ),
-              Container(
-                width: 100,
-                height: 100,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
+              const Spacer(flex: 1),
+              Text(
+                'Notificaciones Inteligentes',
+                style: TextStyle(
                   color: Colors.white,
+                  fontSize: size.width * 0.07,
+                  fontWeight: FontWeight.bold,
+                  height: 1.2,
                 ),
-                child: const Icon(
-                  Iconsax.notification,
-                  size: 50,
-                  color: Color(0xFFEC4899),
-                ),
+                textAlign: TextAlign.center,
               ),
+              SizedBox(height: size.height * 0.02),
+              Text(
+                'Recibe recordatorios automáticos de tus evaluaciones, alertas de semanas críticas y avisos antes de cada clase',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: size.width * 0.037,
+                  height: 1.6,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: size.height * 0.03),
+              _buildNotificationExample(
+                  'Examen de Cálculo mañana a las 10:00', size),
+              SizedBox(height: size.height * 0.015),
+              _buildNotificationExample(
+                  'Semana crítica: 5 evaluaciones próximas', size),
+              const Spacer(flex: 1),
             ],
           ),
-          const SizedBox(height: 60),
-          const Text(
-            'Notificaciones Inteligentes',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              height: 1.2,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Recibe recordatorios automáticos de tus evaluaciones, alertas de semanas críticas y avisos antes de cada clase',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.9),
-              fontSize: 16,
-              height: 1.6,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 40),
-          _buildNotificationExample('Examen de Cálculo mañana a las 10:00'),
-          const SizedBox(height: 12),
-          _buildNotificationExample('Semana crítica: 5 evaluaciones próximas'),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildStatisticsSlide(BuildContext context, Size size) {
-    return Container(
+    final cardSize = size.width * 0.22;
+
+    return SizedBox(
       width: size.width,
       height: size.height,
-      padding: const EdgeInsets.all(40),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Stats visualization
-          Row(
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: size.width * 0.08,
+            vertical: size.height * 0.05,
+          ),
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildStatCard('4.5', 'Promedio'),
-              const SizedBox(width: 16),
-              _buildStatCard('12', 'Cursos'),
+              const Spacer(flex: 1),
+              // Stats visualization
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildStatCard('4.5', 'Promedio', cardSize, size),
+                  SizedBox(width: size.width * 0.04),
+                  _buildStatCard('12', 'Cursos', cardSize, size),
+                ],
+              ),
+              SizedBox(height: size.height * 0.02),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildStatCard('8', 'Pendientes', cardSize, size),
+                  SizedBox(width: size.width * 0.04),
+                  _buildStatCard('95%', 'Asistencia', cardSize, size),
+                ],
+              ),
+              const Spacer(flex: 1),
+              Text(
+                'Estadísticas y Análisis',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: size.width * 0.07,
+                  fontWeight: FontWeight.bold,
+                  height: 1.2,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: size.height * 0.02),
+              Text(
+                'Visualiza tu rendimiento académico con gráficos detallados. Calcula promedios automáticamente y sigue tu progreso en tiempo real',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: size.width * 0.037,
+                  height: 1.6,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const Spacer(flex: 1),
             ],
           ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildStatCard('8', 'Pendientes'),
-              const SizedBox(width: 16),
-              _buildStatCard('95%', 'Asistencia'),
-            ],
-          ),
-          const SizedBox(height: 60),
-          const Text(
-            'Estadísticas y Análisis',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              height: 1.2,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Visualiza tu rendimiento académico con gráficos detallados. Calcula promedios automáticamente y sigue tu progreso en tiempo real',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.9),
-              fontSize: 16,
-              height: 1.6,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildOfflineSlide(BuildContext context, Size size) {
-    return Container(
+    return SizedBox(
       width: size.width,
       height: size.height,
-      padding: const EdgeInsets.all(40),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Shield with checkmark
-          Stack(
-            alignment: Alignment.center,
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: size.width * 0.08,
+            vertical: size.height * 0.05,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 160,
-                height: 160,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.15),
+              const Spacer(flex: 1),
+              // Shield with checkmark - ANIMADO Y CLICKEABLE
+              GestureDetector(
+                onTap: _onDonePress,
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  duration: const Duration(milliseconds: 1500),
+                  curve: Curves.easeInOut,
+                  builder: (context, value, child) {
+                    // Animación de pulso (escala)
+                    final scale = 1.0 + (0.1 * (0.5 - (value - 0.5).abs()) * 2);
+
+                    return Transform.scale(
+                      scale: scale,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Círculo exterior con animación de opacidad
+                          Container(
+                            width: size.width * 0.32,
+                            height: size.width * 0.32,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color:
+                                  Colors.white.withValues(alpha: 0.15 * value),
+                            ),
+                          ),
+                          // Círculo interior clickeable
+                          Container(
+                            width: size.width * 0.24,
+                            height: size.width * 0.24,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.white.withValues(alpha: 0.3),
+                                  blurRadius: 20,
+                                  spreadRadius: 5,
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              Iconsax.shield_tick,
+                              size: size.width * 0.12,
+                              color: const Color(0xFF3B82F6),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  onEnd: () {
+                    // Reiniciar animación en loop
+                    setState(() {});
+                  },
                 ),
               ),
-              Container(
-                width: 120,
-                height: 120,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
+              const Spacer(flex: 1),
+              Text(
+                'Privacidad Total',
+                style: TextStyle(
                   color: Colors.white,
+                  fontSize: size.width * 0.07,
+                  fontWeight: FontWeight.bold,
+                  height: 1.2,
                 ),
-                child: const Icon(
-                  Iconsax.shield_tick,
-                  size: 60,
-                  color: Color(0xFF3B82F6),
-                ),
+                textAlign: TextAlign.center,
               ),
+              SizedBox(height: size.height * 0.02),
+              Text(
+                'Todos tus datos se guardan localmente en tu dispositivo. No necesitas internet para usar Classio',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: size.width * 0.037,
+                  height: 1.6,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: size.height * 0.03),
+              _buildFeatureRow(
+                  Iconsax.lock, 'Sin registro ni inicio de sesión', size),
+              SizedBox(height: size.height * 0.02),
+              _buildFeatureRow(Iconsax.mobile, 'Funciona sin conexión', size),
+              SizedBox(height: size.height * 0.02),
+              _buildFeatureRow(
+                  Iconsax.shield_security, 'Tus datos son solo tuyos', size),
+              const Spacer(flex: 1),
             ],
           ),
-          const SizedBox(height: 60),
-          const Text(
-            'Privacidad Total',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              height: 1.2,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Todos tus datos se guardan localmente en tu dispositivo. No necesitas internet para usar Classio',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.9),
-              fontSize: 16,
-              height: 1.6,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 40),
-          _buildFeatureRow(Iconsax.lock, 'Sin registro ni inicio de sesión'),
-          const SizedBox(height: 16),
-          _buildFeatureRow(Iconsax.mobile, 'Funciona sin conexión'),
-          const SizedBox(height: 16),
-          _buildFeatureRow(Iconsax.shield_security, 'Tus datos son solo tuyos'),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildFeatureCard(IconData icon, String label, Color color) {
+  Widget _buildFeatureCard(
+      IconData icon, String label, Color color, double size) {
     return Container(
-      width: 100,
-      height: 100,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(size * 0.2),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.3),
           width: 2,
@@ -449,13 +539,13 @@ class _IntroSlidesScreenState extends ConsumerState<IntroSlidesScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 36),
-          const SizedBox(height: 8),
+          Icon(icon, color: color, size: size * 0.36),
+          SizedBox(height: size * 0.08),
           Text(
             label,
             style: TextStyle(
               color: color,
-              fontSize: 12,
+              fontSize: size * 0.12,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -464,9 +554,9 @@ class _IntroSlidesScreenState extends ConsumerState<IntroSlidesScreen> {
     );
   }
 
-  Widget _buildNotificationExample(String text) {
+  Widget _buildNotificationExample(String text, Size screenSize) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(screenSize.width * 0.04),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
@@ -477,14 +567,15 @@ class _IntroSlidesScreenState extends ConsumerState<IntroSlidesScreen> {
       ),
       child: Row(
         children: [
-          const Icon(Iconsax.notification_bing, color: Colors.white, size: 20),
-          const SizedBox(width: 12),
+          Icon(Iconsax.notification_bing,
+              color: Colors.white, size: screenSize.width * 0.05),
+          SizedBox(width: screenSize.width * 0.03),
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
-                fontSize: 14,
+                fontSize: screenSize.width * 0.035,
               ),
             ),
           ),
@@ -493,13 +584,14 @@ class _IntroSlidesScreenState extends ConsumerState<IntroSlidesScreen> {
     );
   }
 
-  Widget _buildStatCard(String value, String label) {
+  Widget _buildStatCard(
+      String value, String label, double size, Size screenSize) {
     return Container(
-      width: 100,
-      height: 100,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(size * 0.2),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.3),
           width: 2,
@@ -510,18 +602,18 @@ class _IntroSlidesScreenState extends ConsumerState<IntroSlidesScreen> {
         children: [
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 28,
+              fontSize: screenSize.width * 0.065,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: size * 0.04),
           Text(
             label,
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.9),
-              fontSize: 12,
+              fontSize: screenSize.width * 0.03,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -530,24 +622,24 @@ class _IntroSlidesScreenState extends ConsumerState<IntroSlidesScreen> {
     );
   }
 
-  Widget _buildFeatureRow(IconData icon, String text) {
+  Widget _buildFeatureRow(IconData icon, String text, Size screenSize) {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
+          padding: EdgeInsets.all(screenSize.width * 0.02),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, color: Colors.white, size: 20),
+          child: Icon(icon, color: Colors.white, size: screenSize.width * 0.05),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: screenSize.width * 0.03),
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 15,
+              fontSize: screenSize.width * 0.037,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -557,52 +649,48 @@ class _IntroSlidesScreenState extends ConsumerState<IntroSlidesScreen> {
   }
 
   Widget _renderSkipButton() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: const Text(
-        "Saltar",
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screenWidth = MediaQuery.of(context).size.width;
+        return Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: screenWidth * 0.04,
+            vertical: screenWidth * 0.02,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            "Saltar",
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              fontSize: screenWidth * 0.038,
+            ),
+          ),
+        );
+      },
     );
   }
 
   Widget _renderNextButton() {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
-        shape: BoxShape.circle,
-      ),
-      child: const Icon(
-        Iconsax.arrow_right_3,
-        color: Colors.white,
-        size: 24,
-      ),
-    );
-  }
-
-  Widget _renderDoneButton() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: const Text(
-        "Comenzar",
-        style: TextStyle(
-          color: AppColors.primary,
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
-        ),
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screenWidth = MediaQuery.of(context).size.width;
+        return Container(
+          padding: EdgeInsets.all(screenWidth * 0.03),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.2),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            Iconsax.arrow_right_3,
+            color: Colors.white,
+            size: screenWidth * 0.06,
+          ),
+        );
+      },
     );
   }
 

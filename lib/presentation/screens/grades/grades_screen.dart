@@ -102,36 +102,99 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
   }
 
   Widget _buildCourseSelector(BuildContext context, List<Course> courses) {
+    // Si hay muchos cursos (más de 6), usar dropdown
+    if (courses.length > 6) {
+      return _buildDropdownSelector(context, courses);
+    }
+
+    // Si hay pocos cursos, usar chips con Wrap
     return Container(
-      height: 60,
-      padding: const EdgeInsets.symmetric(horizontal: AppSizes.spacing16),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: courses.length,
-        itemBuilder: (context, index) {
-          final course = courses[index];
+      padding: const EdgeInsets.all(AppSizes.spacing16),
+      child: Wrap(
+        spacing: AppSizes.spacing8,
+        runSpacing: AppSizes.spacing8,
+        children: courses.map((course) {
           final isSelected = course.id == _selectedCourseId;
 
-          return Padding(
-            padding: const EdgeInsets.only(right: AppSizes.spacing8),
-            child: FilterChip(
-              selected: isSelected,
-              label: Text(course.code),
-              avatar: Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(
-                  color: Color(course.colorValue),
-                  shape: BoxShape.circle,
-                ),
+          return FilterChip(
+            selected: isSelected,
+            label: Text(course.code),
+            avatar: Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: Color(course.colorValue),
+                shape: BoxShape.circle,
               ),
-              onSelected: (selected) {
-                setState(() {
-                  _selectedCourseId = course.id;
-                });
-              },
+            ),
+            onSelected: (selected) {
+              setState(() {
+                _selectedCourseId = course.id;
+              });
+            },
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildDropdownSelector(BuildContext context, List<Course> courses) {
+    final selectedCourse = courses.firstWhere(
+      (c) => c.id == _selectedCourseId,
+      orElse: () => courses.first,
+    );
+
+    return Container(
+      padding: const EdgeInsets.all(AppSizes.spacing16),
+      child: DropdownButtonFormField<String>(
+        value: _selectedCourseId,
+        isExpanded: true,
+        decoration: InputDecoration(
+          labelText: 'Curso',
+          prefixIcon: Container(
+            margin: const EdgeInsets.all(12),
+            width: 16,
+            height: 16,
+            decoration: BoxDecoration(
+              color: Color(selectedCourse.colorValue),
+              shape: BoxShape.circle,
+            ),
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+          ),
+        ),
+        items: courses.map((course) {
+          return DropdownMenuItem<String>(
+            value: course.id,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: Color(course.colorValue),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: AppSizes.spacing12),
+                Flexible(
+                  child: Text(
+                    '${course.code} - ${course.name}',
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
           );
+        }).toList(),
+        onChanged: (value) {
+          if (value != null) {
+            setState(() {
+              _selectedCourseId = value;
+            });
+          }
         },
       ),
     );

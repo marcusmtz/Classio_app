@@ -1618,50 +1618,28 @@ class SettingsScreen extends ConsumerWidget {
     // 1. Limpiar datos actuales
     await HiveService.clearAll();
 
-    // 2. Importar cursos
+    // 2. Importar cursos directamente al repositorio (preservando IDs originales)
+    final courseRepo = ref.read(courseRepositoryProvider);
     for (final course in result.courses) {
-      await ref.read(coursesProvider.notifier).addCourse(
-            name: course.name,
-            code: course.code,
-            colorValue: course.colorValue,
-          );
+      await courseRepo.add(course);
     }
 
-    // 3. Importar horarios
+    // 3. Importar horarios directamente al repositorio (preservando IDs originales)
+    final scheduleRepo = ref.read(scheduleRepositoryProvider);
     for (final schedule in result.schedules) {
-      await ref.read(scheduleProvider.notifier).addSchedule(
-            courseId: schedule.courseId,
-            dayOfWeek: schedule.dayOfWeek,
-            startTime: schedule.startTime,
-            endTime: schedule.endTime,
-            location: schedule.location,
-          );
+      await scheduleRepo.add(schedule);
     }
 
-    // 4. Importar evaluaciones
+    // 4. Importar evaluaciones directamente al repositorio (preservando IDs originales)
+    final evaluationRepo = ref.read(evaluationRepositoryProvider);
     for (final evaluation in result.evaluations) {
-      await ref.read(evaluationsProvider.notifier).addEvaluation(
-            courseId: evaluation.courseId,
-            title: evaluation.title,
-            description: evaluation.description,
-            type: evaluation.type,
-            dueDate: evaluation.dueDate,
-            priority: evaluation.isPriorityManual ? evaluation.priority : null,
-          );
+      await evaluationRepo.add(evaluation);
     }
 
-    // 5. Importar notas
+    // 5. Importar notas directamente al repositorio (preservando IDs originales)
+    final gradeRepo = ref.read(gradeRepositoryProvider);
     for (final grade in result.grades) {
-      await ref.read(gradesProvider.notifier).addGrade(
-            courseId: grade.courseId,
-            title: grade.title,
-            type: grade.type,
-            score: grade.score,
-            maxScore: grade.maxScore,
-            weight: grade.weight,
-            date: grade.date,
-            notes: grade.notes,
-          );
+      await gradeRepo.add(grade);
     }
 
     // 6. Importar configuración (si existe)
@@ -1686,6 +1664,6 @@ class SettingsScreen extends ConsumerWidget {
       }
     }
 
-    // Los providers se actualizan automáticamente al agregar datos
+    // Los providers se actualizan automáticamente al agregar datos a los repositorios
   }
 }
