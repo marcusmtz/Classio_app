@@ -7,6 +7,7 @@ import '../../../core/constants/app_sizes.dart';
 import '../../../data/models/grade_model.dart';
 import '../../providers/grades_provider.dart';
 import '../../providers/courses_provider.dart';
+import '../../providers/app_settings_provider.dart';
 
 class GradeFormScreen extends ConsumerStatefulWidget {
   final String courseId;
@@ -39,7 +40,7 @@ class _GradeFormScreenState extends ConsumerState<GradeFormScreen> {
     _scoreController =
         TextEditingController(text: widget.grade?.score.toString() ?? '');
     _maxScoreController =
-        TextEditingController(text: widget.grade?.maxScore.toString() ?? '7.0');
+        TextEditingController(text: widget.grade?.maxScore.toString() ?? '');
     _weightController =
         TextEditingController(text: widget.grade?.weight.toString() ?? '');
     _notesController = TextEditingController(text: widget.grade?.notes ?? '');
@@ -67,6 +68,7 @@ class _GradeFormScreenState extends ConsumerState<GradeFormScreen> {
       );
     }
 
+    final settings = ref.watch(appSettingsProvider);
     final isEditing = widget.grade != null;
 
     return Scaffold(
@@ -171,10 +173,12 @@ class _GradeFormScreenState extends ConsumerState<GradeFormScreen> {
                     controller: _scoreController,
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Nota Obtenida',
-                      hintText: '6.5',
-                      prefixIcon: Icon(Iconsax.star),
+                      hintText: settings.gradeMaxValue.toStringAsFixed(1),
+                      prefixIcon: const Icon(Iconsax.star),
+                      helperText:
+                          '${settings.gradeMinValue.toStringAsFixed(1)} - ${settings.gradeMaxValue.toStringAsFixed(1)}',
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -183,6 +187,10 @@ class _GradeFormScreenState extends ConsumerState<GradeFormScreen> {
                       final score = double.tryParse(value);
                       if (score == null) {
                         return 'Número inválido';
+                      }
+                      if (score < settings.gradeMinValue ||
+                          score > settings.gradeMaxValue) {
+                        return 'Fuera de rango';
                       }
                       return null;
                     },
@@ -194,10 +202,10 @@ class _GradeFormScreenState extends ConsumerState<GradeFormScreen> {
                     controller: _maxScoreController,
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Nota Máxima',
-                      hintText: '7.0',
-                      prefixIcon: Icon(Iconsax.star_1),
+                      hintText: settings.gradeMaxValue.toStringAsFixed(1),
+                      prefixIcon: const Icon(Iconsax.star_1),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -206,6 +214,10 @@ class _GradeFormScreenState extends ConsumerState<GradeFormScreen> {
                       final maxScore = double.tryParse(value);
                       if (maxScore == null || maxScore <= 0) {
                         return 'Inválido';
+                      }
+                      if (maxScore < settings.gradeMinValue ||
+                          maxScore > settings.gradeMaxValue) {
+                        return 'Fuera de rango';
                       }
                       return null;
                     },

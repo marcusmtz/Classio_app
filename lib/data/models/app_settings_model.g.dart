@@ -30,13 +30,16 @@ class AppSettingsAdapter extends TypeAdapter<AppSettings> {
       classReminderEnabled: fields[10] as bool,
       lowGradeAlertEnabled: fields[11] as bool,
       hasSeenTour: fields[12] as bool,
+      gradeMinValue: fields[13] as double,
+      gradeMaxValue: fields[14] as double,
+      gradePassingValue: fields[15] as double,
     );
   }
 
   @override
   void write(BinaryWriter writer, AppSettings obj) {
     writer
-      ..writeByte(13)
+      ..writeByte(16)
       ..writeByte(0)
       ..write(obj.themeMode)
       ..writeByte(1)
@@ -62,7 +65,13 @@ class AppSettingsAdapter extends TypeAdapter<AppSettings> {
       ..writeByte(11)
       ..write(obj.lowGradeAlertEnabled)
       ..writeByte(12)
-      ..write(obj.hasSeenTour);
+      ..write(obj.hasSeenTour)
+      ..writeByte(13)
+      ..write(obj.gradeMinValue)
+      ..writeByte(14)
+      ..write(obj.gradeMaxValue)
+      ..writeByte(15)
+      ..write(obj.gradePassingValue);
   }
 
   @override

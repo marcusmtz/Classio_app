@@ -26,11 +26,31 @@ class HomeScreen extends ConsumerWidget {
     final criticalWeekInfo = ref.watch(criticalWeekProvider);
 
     final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
     final todayEvaluations = pendingEvaluations.where((e) {
       return e.dueDate.year == now.year &&
           e.dueDate.month == now.month &&
           e.dueDate.day == now.day;
     }).toList();
+
+    // Obtener la próxima evaluación: priorizar las de hoy, sino mostrar la próxima futura (no vencida)
+    Evaluation? nextEvaluation;
+    if (todayEvaluations.isNotEmpty) {
+      nextEvaluation = todayEvaluations.first;
+    } else {
+      // Buscar la primera evaluación que no esté vencida
+      final futureEvaluations = pendingEvaluations
+          .where((e) =>
+              e.dueDate.isAfter(today) ||
+              (e.dueDate.year == today.year &&
+                  e.dueDate.month == today.month &&
+                  e.dueDate.day == today.day))
+          .toList();
+      if (futureEvaluations.isNotEmpty) {
+        nextEvaluation = futureEvaluations.first;
+      }
+    }
 
     return Scaffold(
       body: SafeArea(
@@ -68,11 +88,12 @@ class HomeScreen extends ConsumerWidget {
                       .fadeIn(duration: 400.ms)
                       .slideY(begin: 0.2, end: 0),
                   const SizedBox(height: AppSizes.spacing16),
-                  if (pendingEvaluations.isNotEmpty)
+                  // Mostrar próxima evaluación (prioriza hoy, sino muestra futuras, nunca vencidas)
+                  if (nextEvaluation != null)
                     _buildNextEvaluationCard(
                       context,
                       ref,
-                      pendingEvaluations.first,
+                      nextEvaluation,
                     )
                         .animate(delay: 100.ms)
                         .fadeIn(duration: 400.ms)

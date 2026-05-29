@@ -7,6 +7,7 @@ import '../../../data/models/grade_model.dart';
 import '../../../data/models/course_model.dart';
 import '../../providers/grades_provider.dart';
 import '../../providers/courses_provider.dart';
+import '../../providers/app_settings_provider.dart';
 import 'grade_form_screen.dart';
 import 'widgets/grade_card.dart';
 import 'widgets/course_grade_summary.dart';
@@ -227,8 +228,18 @@ class _GradeCalculatorSheet extends ConsumerStatefulWidget {
 }
 
 class _GradeCalculatorSheetState extends ConsumerState<_GradeCalculatorSheet> {
-  final _targetController = TextEditingController(text: '4.0');
+  late TextEditingController _targetController;
   double? _minimumNeeded;
+
+  @override
+  void initState() {
+    super.initState();
+    // Inicializar con la nota de aprobación configurada
+    final settings = ref.read(appSettingsProvider);
+    _targetController = TextEditingController(
+      text: settings.gradePassingValue.toStringAsFixed(1),
+    );
+  }
 
   @override
   void dispose() {
@@ -237,10 +248,17 @@ class _GradeCalculatorSheetState extends ConsumerState<_GradeCalculatorSheet> {
   }
 
   void _calculate() {
+    final settings = ref.read(appSettingsProvider);
     final target = double.tryParse(_targetController.text);
-    if (target == null || target < 1.0 || target > 7.0) {
+    if (target == null ||
+        target < settings.gradeMinValue ||
+        target > settings.gradeMaxValue) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ingresa una nota válida (1.0 - 7.0)')),
+        SnackBar(
+          content: Text(
+            'Ingresa una nota válida (${settings.gradeMinValue.toStringAsFixed(1)} - ${settings.gradeMaxValue.toStringAsFixed(1)})',
+          ),
+        ),
       );
       return;
     }
@@ -271,6 +289,7 @@ class _GradeCalculatorSheetState extends ConsumerState<_GradeCalculatorSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final settings = ref.watch(appSettingsProvider);
     final totalWeight =
         ref.watch(gradesProvider.notifier).getTotalWeight(widget.courseId);
     final remainingWeight = 100 - totalWeight;
@@ -377,10 +396,11 @@ class _GradeCalculatorSheetState extends ConsumerState<_GradeCalculatorSheet> {
           TextField(
             controller: _targetController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Nota Objetivo',
-              hintText: '4.0',
-              suffixText: '(1.0 - 7.0)',
+              hintText: settings.gradePassingValue.toStringAsFixed(1),
+              suffixText:
+                  '(${settings.gradeMinValue.toStringAsFixed(1)} - ${settings.gradeMaxValue.toStringAsFixed(1)})',
             ),
           ),
           const SizedBox(height: AppSizes.spacing16),
@@ -452,13 +472,14 @@ class _GradeCalculatorSheetState extends ConsumerState<_GradeCalculatorSheet> {
   }
 
   String _getGradeMessage(double grade) {
-    if (grade > 7.0) {
+    final settings = ref.read(appSettingsProvider);
+    if (grade > settings.gradeMaxValue) {
       return 'No es posible alcanzar esta nota 😔';
-    } else if (grade >= 6.0) {
+    } else if (grade >= settings.gradeMaxValue * 0.85) {
       return '¡Necesitas una nota muy alta! 💪';
-    } else if (grade >= 5.0) {
+    } else if (grade >= settings.gradeMaxValue * 0.70) {
       return 'Necesitas una buena nota 📚';
-    } else if (grade >= 4.0) {
+    } else if (grade >= settings.gradePassingValue) {
       return '¡Totalmente alcanzable! 🎯';
     } else {
       return '¡Muy fácil de lograr! 🌟';

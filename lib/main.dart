@@ -52,14 +52,43 @@ class ClassioApp extends ConsumerStatefulWidget {
   ConsumerState<ClassioApp> createState() => _ClassioAppState();
 }
 
-class _ClassioAppState extends ConsumerState<ClassioApp> {
+class _ClassioAppState extends ConsumerState<ClassioApp>
+    with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    // Agregar observer para detectar cambios en el ciclo de vida de la app
+    WidgetsBinding.instance.addObserver(this);
+
     // Inicializar notificaciones inteligentes después de que el widget esté montado
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeSmartNotifications();
     });
+  }
+
+  @override
+  void dispose() {
+    // Remover observer al destruir el widget
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    // Detectar cuando la app pasa a segundo plano o se pausa
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      // Ocultar contenido sensible cuando la app se minimiza o el dispositivo se bloquea
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
+    } else if (state == AppLifecycleState.resumed) {
+      // Restaurar UI cuando la app vuelve al frente
+      SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: SystemUiOverlay.values,
+      );
+    }
   }
 
   Future<void> _initializeSmartNotifications() async {

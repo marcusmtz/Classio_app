@@ -80,4 +80,21 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
     await _repository.updateHasSeenTour(hasSeen);
     state = state.copyWith(hasSeenTour: hasSeen);
   }
+
+  Future<void> updateGradeScale({
+    required double minValue,
+    required double maxValue,
+    required double passingValue,
+  }) async {
+    await _repository.updateGradeScale(
+      minValue: minValue,
+      maxValue: maxValue,
+      passingValue: passingValue,
+    );
+    state = state.copyWith(
+      gradeMinValue: minValue,
+      gradeMaxValue: maxValue,
+      gradePassingValue: passingValue,
+    );
+  }
 }

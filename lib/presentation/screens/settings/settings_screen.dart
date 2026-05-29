@@ -201,6 +201,27 @@ class SettingsScreen extends ConsumerWidget {
 
           const Divider(height: 1),
 
+          // Calificaciones
+          _buildSectionHeader(context, 'Calificaciones'),
+          ListTile(
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.secondary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Iconsax.star, color: AppColors.secondary),
+            ),
+            title: const Text('Escala de Notas'),
+            subtitle: Text(
+              'Rango: ${settings.gradeMinValue.toStringAsFixed(1)} - ${settings.gradeMaxValue.toStringAsFixed(1)} (Aprobación: ${settings.gradePassingValue.toStringAsFixed(1)})',
+            ),
+            trailing: const Icon(Iconsax.arrow_right_3),
+            onTap: () => _showGradeScaleDialog(context, ref, settings),
+          ),
+
+          const Divider(height: 1),
+
           // Datos
           _buildSectionHeader(context, 'Datos'),
           ListTile(
@@ -461,6 +482,241 @@ class SettingsScreen extends ConsumerWidget {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancelar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showGradeScaleDialog(
+    BuildContext context,
+    WidgetRef ref,
+    models.AppSettings settings,
+  ) {
+    final minController = TextEditingController(
+      text: settings.gradeMinValue.toStringAsFixed(1),
+    );
+    final maxController = TextEditingController(
+      text: settings.gradeMaxValue.toStringAsFixed(1),
+    );
+    final passingController = TextEditingController(
+      text: settings.gradePassingValue.toStringAsFixed(1),
+    );
+    final formKey = GlobalKey<FormState>();
+
+    // Presets comunes
+    final presets = {
+      'Chile (1-7)': {'min': 1.0, 'max': 7.0, 'passing': 4.0},
+      'Internacional (0-10)': {'min': 0.0, 'max': 10.0, 'passing': 6.0},
+      'Porcentaje (0-100)': {'min': 0.0, 'max': 100.0, 'passing': 60.0},
+      'Perú (0-20)': {'min': 0.0, 'max': 20.0, 'passing': 11.0},
+      'USA (0-4)': {'min': 0.0, 'max': 4.0, 'passing': 2.0},
+    };
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Iconsax.star, color: AppColors.secondary),
+            SizedBox(width: 12),
+            Expanded(child: Text('Escala de Notas')),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Configura el rango de calificaciones usado en tu institución:',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 16),
+
+                // Presets
+                Text(
+                  'Presets comunes:',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: presets.entries.map((entry) {
+                    return ActionChip(
+                      label: Text(entry.key),
+                      onPressed: () {
+                        minController.text =
+                            entry.value['min']!.toStringAsFixed(1);
+                        maxController.text =
+                            entry.value['max']!.toStringAsFixed(1);
+                        passingController.text =
+                            entry.value['passing']!.toStringAsFixed(1);
+                      },
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 24),
+
+                // Nota Mínima
+                TextFormField(
+                  controller: minController,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                    labelText: 'Nota Mínima',
+                    hintText: '1.0',
+                    prefixIcon: Icon(Iconsax.arrow_down),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Requerido';
+                    }
+                    final num = double.tryParse(value);
+                    if (num == null) {
+                      return 'Número inválido';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Nota Máxima
+                TextFormField(
+                  controller: maxController,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                    labelText: 'Nota Máxima',
+                    hintText: '7.0',
+                    prefixIcon: Icon(Iconsax.arrow_up),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Requerido';
+                    }
+                    final num = double.tryParse(value);
+                    if (num == null) {
+                      return 'Número inválido';
+                    }
+                    final min = double.tryParse(minController.text);
+                    if (min != null && num <= min) {
+                      return 'Debe ser mayor que la mínima';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Nota de Aprobación
+                TextFormField(
+                  controller: passingController,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                    labelText: 'Nota de Aprobación',
+                    hintText: '4.0',
+                    prefixIcon: Icon(Iconsax.tick_circle),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Requerido';
+                    }
+                    final num = double.tryParse(value);
+                    if (num == null) {
+                      return 'Número inválido';
+                    }
+                    final min = double.tryParse(minController.text);
+                    final max = double.tryParse(maxController.text);
+                    if (min != null && num < min) {
+                      return 'Debe ser mayor o igual a la mínima';
+                    }
+                    if (max != null && num > max) {
+                      return 'Debe ser menor o igual a la máxima';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Advertencia
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.warning.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: AppColors.warning.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Iconsax.info_circle,
+                        color: AppColors.warning,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Esto afectará cómo se muestran y calculan las notas en toda la app.',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppColors.warning,
+                                  ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              minController.dispose();
+              maxController.dispose();
+              passingController.dispose();
+              Navigator.pop(context);
+            },
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              if (!formKey.currentState!.validate()) return;
+
+              final min = double.parse(minController.text);
+              final max = double.parse(maxController.text);
+              final passing = double.parse(passingController.text);
+
+              await ref.read(appSettingsProvider.notifier).updateGradeScale(
+                    minValue: min,
+                    maxValue: max,
+                    passingValue: passing,
+                  );
+
+              minController.dispose();
+              maxController.dispose();
+              passingController.dispose();
+
+              if (context.mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Escala de notas actualizada'),
+                    backgroundColor: AppColors.success,
+                  ),
+                );
+              }
+            },
+            child: const Text('Guardar'),
           ),
         ],
       ),
@@ -787,62 +1043,133 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   void _showClearDataDialog(BuildContext context, WidgetRef ref) {
+    final confirmationController = TextEditingController();
+    bool isConfirmationValid = false;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('⚠️ Limpiar Datos'),
-        content: const Text(
-          'Esta acción eliminará TODOS tus datos:\n\n'
-          '• Cursos\n'
-          '• Horarios\n'
-          '• Evaluaciones\n'
-          '• Notas\n'
-          '• Configuraciones\n\n'
-          'Esta acción NO se puede deshacer.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+      barrierDismissible: false, // No permitir cerrar tocando fuera
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Iconsax.warning_2, color: AppColors.error, size: 28),
+              SizedBox(width: 12),
+              Expanded(child: Text('⚠️ Limpiar Datos')),
+            ],
           ),
-          FilledButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              try {
-                await ref
-                    .read(notificationServiceProvider)
-                    .cancelAllNotifications();
-                await HiveService.clearAll();
-                ref.read(appSettingsProvider.notifier).loadSettings();
-
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Todos los datos fueron eliminados'),
-                      backgroundColor: AppColors.success,
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(ErrorUtils.toUserMessage(
-                        e,
-                        fallback: 'No se pudo limpiar los datos.',
-                      )),
-                      backgroundColor: AppColors.error,
-                    ),
-                  );
-                }
-              }
-            },
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.error,
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Esta acción eliminará TODOS tus datos:\n\n'
+                '• Cursos\n'
+                '• Horarios\n'
+                '• Evaluaciones\n'
+                '• Notas\n'
+                '• Configuraciones\n\n'
+                '⚠️ Esta acción NO se puede deshacer.\n\n'
+                'Para confirmar, escribe "ELIMINAR" a continuación:',
+                style: TextStyle(height: 1.5),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: confirmationController,
+                decoration: InputDecoration(
+                  hintText: 'Escribe ELIMINAR',
+                  border: const OutlineInputBorder(),
+                  errorText: confirmationController.text.isNotEmpty &&
+                          confirmationController.text != 'ELIMINAR'
+                      ? 'Debe escribir exactamente "ELIMINAR"'
+                      : null,
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    isConfirmationValid = value == 'ELIMINAR';
+                  });
+                },
+                textCapitalization: TextCapitalization.characters,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                confirmationController.dispose();
+                Navigator.pop(context);
+              },
+              child: const Text('Cancelar'),
             ),
-            child: const Text('Eliminar Todo'),
-          ),
-        ],
+            FilledButton(
+              onPressed: isConfirmationValid
+                  ? () async {
+                      Navigator.pop(context);
+                      confirmationController.dispose();
+
+                      // Mostrar diálogo de carga
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (context) => const Center(
+                          child: Card(
+                            child: Padding(
+                              padding: EdgeInsets.all(24.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircularProgressIndicator(),
+                                  SizedBox(height: 16),
+                                  Text('Eliminando datos...'),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+
+                      try {
+                        await ref
+                            .read(notificationServiceProvider)
+                            .cancelAllNotifications();
+                        await HiveService.clearAll();
+                        ref.read(appSettingsProvider.notifier).loadSettings();
+
+                        if (context.mounted) {
+                          Navigator.pop(context); // Cerrar diálogo de carga
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content:
+                                  Text('Todos los datos fueron eliminados'),
+                              backgroundColor: AppColors.success,
+                              duration: Duration(seconds: 3),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          Navigator.pop(context); // Cerrar diálogo de carga
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(ErrorUtils.toUserMessage(
+                                e,
+                                fallback: 'No se pudo limpiar los datos.',
+                              )),
+                              backgroundColor: AppColors.error,
+                            ),
+                          );
+                        }
+                      }
+                    }
+                  : null, // Deshabilitar si no es válido
+              style: FilledButton.styleFrom(
+                backgroundColor:
+                    isConfirmationValid ? AppColors.error : Colors.grey,
+              ),
+              child: const Text('Eliminar Todo'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1362,4 +1689,3 @@ class SettingsScreen extends ConsumerWidget {
     // Los providers se actualizan automáticamente al agregar datos
   }
 }
-

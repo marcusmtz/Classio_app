@@ -54,6 +54,15 @@ class AppSettings extends Equatable {
   @HiveField(12)
   final bool hasSeenTour;
 
+  @HiveField(13)
+  final double gradeMinValue;
+
+  @HiveField(14)
+  final double gradeMaxValue;
+
+  @HiveField(15)
+  final double gradePassingValue;
+
   const AppSettings({
     this.themeMode = ThemeMode.system,
     this.notificationsEnabled = true,
@@ -68,6 +77,9 @@ class AppSettings extends Equatable {
     this.classReminderEnabled = true,
     this.lowGradeAlertEnabled = true,
     this.hasSeenTour = false,
+    this.gradeMinValue = 1.0,
+    this.gradeMaxValue = 7.0,
+    this.gradePassingValue = 4.0,
   });
 
   AppSettings copyWith({
@@ -84,6 +96,9 @@ class AppSettings extends Equatable {
     bool? classReminderEnabled,
     bool? lowGradeAlertEnabled,
     bool? hasSeenTour,
+    double? gradeMinValue,
+    double? gradeMaxValue,
+    double? gradePassingValue,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -99,6 +114,9 @@ class AppSettings extends Equatable {
       classReminderEnabled: classReminderEnabled ?? this.classReminderEnabled,
       lowGradeAlertEnabled: lowGradeAlertEnabled ?? this.lowGradeAlertEnabled,
       hasSeenTour: hasSeenTour ?? this.hasSeenTour,
+      gradeMinValue: gradeMinValue ?? this.gradeMinValue,
+      gradeMaxValue: gradeMaxValue ?? this.gradeMaxValue,
+      gradePassingValue: gradePassingValue ?? this.gradePassingValue,
     );
   }
 
@@ -117,5 +135,8 @@ class AppSettings extends Equatable {
         classReminderEnabled,
         lowGradeAlertEnabled,
         hasSeenTour,
+        gradeMinValue,
+        gradeMaxValue,
+        gradePassingValue,
       ];
 }

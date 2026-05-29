@@ -114,4 +114,18 @@ class AppSettingsRepository {
       lastUpdated: DateTime.now(),
     ));
   }
+
+  Future<void> updateGradeScale({
+    required double minValue,
+    required double maxValue,
+    required double passingValue,
+  }) async {
+    final settings = getSettings();
+    await saveSettings(settings.copyWith(
+      gradeMinValue: minValue,
+      gradeMaxValue: maxValue,
+      gradePassingValue: passingValue,
+      lastUpdated: DateTime.now(),
+    ));
+  }
 }
