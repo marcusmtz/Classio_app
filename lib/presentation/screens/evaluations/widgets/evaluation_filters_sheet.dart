@@ -75,23 +75,18 @@ class EvaluationFiltersSheet extends ConsumerWidget {
             'Curso',
             style: Theme.of(context).textTheme.titleSmall,
           ),
-          const SizedBox(height: AppSizes.spacing8),
-          Wrap(
-            spacing: AppSizes.spacing8,
-            runSpacing: AppSizes.spacing8,
-            children: [
-              FilterChip(
-                label: const Text('Todos'),
-                selected: filters.courseId == null,
-                onSelected: (selected) {
-                  if (selected) {
-                    ref.read(evaluationFiltersProvider.notifier).setCourseFilter(null);
-                  }
-                },
-              ),
-              ...courses.map((course) => FilterChip(
-                    label: Text(course.code),
-                    avatar: Container(
+          const SizedBox(height: AppSizes.spacing12),
+          DropdownMenu<String>(
+            expandedInsets: EdgeInsets.zero,
+            width: double.infinity,
+            label: const Text('Curso'),
+            initialSelection: filters.courseId ?? 'all',
+            dropdownMenuEntries: [
+              const DropdownMenuEntry(value: 'all', label: 'Todos'),
+              ...courses.map((course) => DropdownMenuEntry(
+                    value: course.id,
+                    label: course.code,
+                    leadingIcon: Container(
                       width: 12,
                       height: 12,
                       decoration: BoxDecoration(
@@ -99,14 +94,13 @@ class EvaluationFiltersSheet extends ConsumerWidget {
                         shape: BoxShape.circle,
                       ),
                     ),
-                    selected: filters.courseId == course.id,
-                    onSelected: (selected) {
-                      ref
-                          .read(evaluationFiltersProvider.notifier)
-                          .setCourseFilter(selected ? course.id : null);
-                    },
                   )),
             ],
+            onSelected: (value) {
+              ref
+                  .read(evaluationFiltersProvider.notifier)
+                  .setCourseFilter(value == null || value == 'all' ? null : value);
+            },
           ),
           const SizedBox(height: AppSizes.spacing24),
 
@@ -115,51 +109,55 @@ class EvaluationFiltersSheet extends ConsumerWidget {
             'Tipo',
             style: Theme.of(context).textTheme.titleSmall,
           ),
-          const SizedBox(height: AppSizes.spacing8),
-          Wrap(
-            spacing: AppSizes.spacing8,
-            runSpacing: AppSizes.spacing8,
-            children: [
-              FilterChip(
-                label: const Text('Todos'),
-                selected: filters.type == null,
-                onSelected: (selected) {
-                  if (selected) {
-                    ref.read(evaluationFiltersProvider.notifier).setTypeFilter(null);
-                  }
-                },
+          const SizedBox(height: AppSizes.spacing12),
+          DropdownMenu<String>(
+            expandedInsets: EdgeInsets.zero,
+            width: double.infinity,
+            label: const Text('Tipo'),
+            initialSelection: filters.type == null
+                ? 'all'
+                : filters.type == EvaluationType.exam
+                    ? 'exam'
+                    : filters.type == EvaluationType.task
+                        ? 'task'
+                        : 'project',
+            dropdownMenuEntries: const [
+              DropdownMenuEntry(value: 'all', label: 'Todos'),
+              DropdownMenuEntry(
+                value: 'exam',
+                label: 'Examen',
+                leadingIcon: Icon(Iconsax.document_text, size: 18),
               ),
-              FilterChip(
-                label: const Text('Examen'),
-                avatar: const Icon(Iconsax.document_text, size: 16),
-                selected: filters.type == EvaluationType.exam,
-                onSelected: (selected) {
-                  ref
-                      .read(evaluationFiltersProvider.notifier)
-                      .setTypeFilter(selected ? EvaluationType.exam : null);
-                },
+              DropdownMenuEntry(
+                value: 'task',
+                label: 'Tarea',
+                leadingIcon: Icon(Iconsax.task, size: 18),
               ),
-              FilterChip(
-                label: const Text('Tarea'),
-                avatar: const Icon(Iconsax.task, size: 16),
-                selected: filters.type == EvaluationType.task,
-                onSelected: (selected) {
-                  ref
-                      .read(evaluationFiltersProvider.notifier)
-                      .setTypeFilter(selected ? EvaluationType.task : null);
-                },
-              ),
-              FilterChip(
-                label: const Text('Proyecto'),
-                avatar: const Icon(Iconsax.folder, size: 16),
-                selected: filters.type == EvaluationType.project,
-                onSelected: (selected) {
-                  ref
-                      .read(evaluationFiltersProvider.notifier)
-                      .setTypeFilter(selected ? EvaluationType.project : null);
-                },
+              DropdownMenuEntry(
+                value: 'project',
+                label: 'Proyecto',
+                leadingIcon: Icon(Iconsax.folder, size: 18),
               ),
             ],
+            onSelected: (value) {
+              EvaluationType? type;
+              switch (value) {
+                case 'exam':
+                  type = EvaluationType.exam;
+                  break;
+                case 'task':
+                  type = EvaluationType.task;
+                  break;
+                case 'project':
+                  type = EvaluationType.project;
+                  break;
+                default:
+                  type = null;
+              }
+              ref
+                  .read(evaluationFiltersProvider.notifier)
+                  .setTypeFilter(type);
+            },
           ),
           const SizedBox(height: AppSizes.spacing24),
 
@@ -168,41 +166,37 @@ class EvaluationFiltersSheet extends ConsumerWidget {
             'Estado',
             style: Theme.of(context).textTheme.titleSmall,
           ),
-          const SizedBox(height: AppSizes.spacing8),
-          Wrap(
-            spacing: AppSizes.spacing8,
-            runSpacing: AppSizes.spacing8,
-            children: [
-              FilterChip(
-                label: const Text('Todos'),
-                selected: filters.isCompleted == null,
-                onSelected: (selected) {
-                  if (selected) {
-                    ref.read(evaluationFiltersProvider.notifier).setStatusFilter(null);
-                  }
-                },
+          const SizedBox(height: AppSizes.spacing12),
+          DropdownMenu<String>(
+            expandedInsets: EdgeInsets.zero,
+            width: double.infinity,
+            label: const Text('Estado'),
+            initialSelection: filters.isCompleted == null
+                ? 'all'
+                : filters.isCompleted!
+                    ? 'completed'
+                    : 'pending',
+            dropdownMenuEntries: const [
+              DropdownMenuEntry(value: 'all', label: 'Todos'),
+              DropdownMenuEntry(
+                value: 'pending',
+                label: 'Pendientes',
+                leadingIcon: Icon(Iconsax.clock, size: 18),
               ),
-              FilterChip(
-                label: const Text('Pendientes'),
-                avatar: const Icon(Iconsax.clock, size: 16),
-                selected: filters.isCompleted == false,
-                onSelected: (selected) {
-                  ref
-                      .read(evaluationFiltersProvider.notifier)
-                      .setStatusFilter(selected ? false : null);
-                },
-              ),
-              FilterChip(
-                label: const Text('Completadas'),
-                avatar: const Icon(Iconsax.tick_circle, size: 16),
-                selected: filters.isCompleted == true,
-                onSelected: (selected) {
-                  ref
-                      .read(evaluationFiltersProvider.notifier)
-                      .setStatusFilter(selected ? true : null);
-                },
+              DropdownMenuEntry(
+                value: 'completed',
+                label: 'Completadas',
+                leadingIcon: Icon(Iconsax.tick_circle, size: 18),
               ),
             ],
+            onSelected: (value) {
+              bool? status;
+              if (value == 'pending') status = false;
+              if (value == 'completed') status = true;
+              ref
+                  .read(evaluationFiltersProvider.notifier)
+                  .setStatusFilter(status);
+            },
           ),
           const SizedBox(height: AppSizes.spacing24),
 
@@ -211,91 +205,85 @@ class EvaluationFiltersSheet extends ConsumerWidget {
             'Prioridad',
             style: Theme.of(context).textTheme.titleSmall,
           ),
-          const SizedBox(height: AppSizes.spacing8),
-          Wrap(
-            spacing: AppSizes.spacing8,
-            runSpacing: AppSizes.spacing8,
-            children: [
-              FilterChip(
-                label: const Text('Todas'),
-                selected: filters.priority == null,
-                onSelected: (selected) {
-                  if (selected) {
-                    ref.read(evaluationFiltersProvider.notifier).setPriorityFilter(null);
-                  }
-                },
+          const SizedBox(height: AppSizes.spacing12),
+          DropdownMenu<String>(
+            expandedInsets: EdgeInsets.zero,
+            width: double.infinity,
+            label: const Text('Prioridad'),
+            initialSelection: filters.priority == null
+                ? 'all'
+                : filters.priority == Priority.critical
+                    ? 'critical'
+                    : filters.priority == Priority.high
+                        ? 'high'
+                        : filters.priority == Priority.medium
+                            ? 'medium'
+                            : 'low',
+            dropdownMenuEntries: const [
+              DropdownMenuEntry(value: 'all', label: 'Todas'),
+              DropdownMenuEntry(
+                value: 'critical',
+                label: 'Crítica',
+                leadingIcon: _PriorityDot(color: AppColors.priorityCritical),
               ),
-              FilterChip(
-                label: const Text('Crítica'),
-                avatar: Container(
-                  width: 12,
-                  height: 12,
-                  decoration: const BoxDecoration(
-                    color: AppColors.priorityCritical,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                selected: filters.priority == Priority.critical,
-                onSelected: (selected) {
-                  ref
-                      .read(evaluationFiltersProvider.notifier)
-                      .setPriorityFilter(selected ? Priority.critical : null);
-                },
+              DropdownMenuEntry(
+                value: 'high',
+                label: 'Alta',
+                leadingIcon: _PriorityDot(color: AppColors.priorityHigh),
               ),
-              FilterChip(
-                label: const Text('Alta'),
-                avatar: Container(
-                  width: 12,
-                  height: 12,
-                  decoration: const BoxDecoration(
-                    color: AppColors.priorityHigh,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                selected: filters.priority == Priority.high,
-                onSelected: (selected) {
-                  ref
-                      .read(evaluationFiltersProvider.notifier)
-                      .setPriorityFilter(selected ? Priority.high : null);
-                },
+              DropdownMenuEntry(
+                value: 'medium',
+                label: 'Media',
+                leadingIcon: _PriorityDot(color: AppColors.priorityMedium),
               ),
-              FilterChip(
-                label: const Text('Media'),
-                avatar: Container(
-                  width: 12,
-                  height: 12,
-                  decoration: const BoxDecoration(
-                    color: AppColors.priorityMedium,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                selected: filters.priority == Priority.medium,
-                onSelected: (selected) {
-                  ref
-                      .read(evaluationFiltersProvider.notifier)
-                      .setPriorityFilter(selected ? Priority.medium : null);
-                },
-              ),
-              FilterChip(
-                label: const Text('Baja'),
-                avatar: Container(
-                  width: 12,
-                  height: 12,
-                  decoration: const BoxDecoration(
-                    color: AppColors.priorityLow,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                selected: filters.priority == Priority.low,
-                onSelected: (selected) {
-                  ref
-                      .read(evaluationFiltersProvider.notifier)
-                      .setPriorityFilter(selected ? Priority.low : null);
-                },
+              DropdownMenuEntry(
+                value: 'low',
+                label: 'Baja',
+                leadingIcon: _PriorityDot(color: AppColors.priorityLow),
               ),
             ],
+            onSelected: (value) {
+              Priority? priority;
+              switch (value) {
+                case 'critical':
+                  priority = Priority.critical;
+                  break;
+                case 'high':
+                  priority = Priority.high;
+                  break;
+                case 'medium':
+                  priority = Priority.medium;
+                  break;
+                case 'low':
+                  priority = Priority.low;
+                  break;
+                default:
+                  priority = null;
+              }
+              ref
+                  .read(evaluationFiltersProvider.notifier)
+                  .setPriorityFilter(priority);
+            },
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _PriorityDot extends StatelessWidget {
+  final Color color;
+
+  const _PriorityDot({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 12,
+      height: 12,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
       ),
     );
   }

@@ -16,7 +16,7 @@ class _IntroSlidesScreenState extends ConsumerState<IntroSlidesScreen> {
   @override
   Widget build(BuildContext context) {
     return IntroSlider(
-      key: UniqueKey(),
+      key: const ValueKey('intro_slider'),
       listContentConfig: _getSlides(context),
       onDonePress: _onDonePress,
       onSkipPress: _onSkipPress,
@@ -50,7 +50,6 @@ class _IntroSlidesScreenState extends ConsumerState<IntroSlidesScreen> {
       ContentConfig(
         title: "",
         description: "",
-        pathImage: "",
         backgroundColor: const Color(0xFF6366F1),
         widgetTitle: _buildWelcomeSlide(context, size),
       ),
@@ -59,7 +58,6 @@ class _IntroSlidesScreenState extends ConsumerState<IntroSlidesScreen> {
       ContentConfig(
         title: "",
         description: "",
-        pathImage: "",
         backgroundColor: const Color(0xFF8B5CF6),
         widgetTitle: _buildOrganizationSlide(context, size),
       ),
@@ -68,7 +66,6 @@ class _IntroSlidesScreenState extends ConsumerState<IntroSlidesScreen> {
       ContentConfig(
         title: "",
         description: "",
-        pathImage: "",
         backgroundColor: const Color(0xFFEC4899),
         widgetTitle: _buildNotificationsSlide(context, size),
       ),
@@ -77,7 +74,6 @@ class _IntroSlidesScreenState extends ConsumerState<IntroSlidesScreen> {
       ContentConfig(
         title: "",
         description: "",
-        pathImage: "",
         backgroundColor: const Color(0xFF10B981),
         widgetTitle: _buildStatisticsSlide(context, size),
       ),
@@ -86,7 +82,6 @@ class _IntroSlidesScreenState extends ConsumerState<IntroSlidesScreen> {
       ContentConfig(
         title: "",
         description: "",
-        pathImage: "",
         backgroundColor: const Color(0xFF3B82F6),
         widgetTitle: _buildOfflineSlide(context, size),
       ),
@@ -447,8 +442,8 @@ class _IntroSlidesScreenState extends ConsumerState<IntroSlidesScreen> {
                         children: [
                           // Círculo exterior con animación de opacidad
                           Container(
-                            width: size.width * 0.32,
-                            height: size.width * 0.32,
+                            width: size.width * 0.36,
+                            height: size.width * 0.36,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color:
@@ -457,22 +452,22 @@ class _IntroSlidesScreenState extends ConsumerState<IntroSlidesScreen> {
                           ),
                           // Círculo interior clickeable
                           Container(
-                            width: size.width * 0.24,
-                            height: size.width * 0.24,
+                            width: size.width * 0.28,
+                            height: size.width * 0.28,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.white.withValues(alpha: 0.3),
-                                  blurRadius: 20,
-                                  spreadRadius: 5,
+                                  color: Colors.white.withValues(alpha: 0.4),
+                                  blurRadius: 30,
+                                  spreadRadius: 8,
                                 ),
                               ],
                             ),
                             child: Icon(
-                              Iconsax.shield_tick,
-                              size: size.width * 0.12,
+                              Iconsax.arrow_right_3,
+                              size: size.width * 0.14,
                               color: const Color(0xFF3B82F6),
                             ),
                           ),
@@ -516,6 +511,16 @@ class _IntroSlidesScreenState extends ConsumerState<IntroSlidesScreen> {
               _buildFeatureRow(
                   Iconsax.shield_security, 'Tus datos son solo tuyos', size),
               const Spacer(flex: 1),
+              // Indicador de que debe tocar para comenzar
+              Text(
+                'Toca el escudo para comenzar',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: size.width * 0.035,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+              SizedBox(height: size.height * 0.02),
             ],
           ),
         ),
