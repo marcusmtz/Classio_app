@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax/iconsax.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../data/models/class_schedule_model.dart';
+import '../../../../data/models/course_model.dart';
 import '../../../providers/courses_provider.dart';
 import '../../../providers/schedule_provider.dart';
 import '../../../providers/app_settings_provider.dart';
@@ -265,11 +267,12 @@ class ScheduleGridView extends ConsumerWidget {
       height: height - 4,
       child: GestureDetector(
         onTap: () {
-          Navigator.push(
+          _showClassDetailSheet(
             context,
-            MaterialPageRoute(
-              builder: (context) => ScheduleFormScreen(schedule: schedule),
-            ),
+            ref,
+            schedule,
+            course,
+            isCurrentClass,
           );
         },
         child: Container(
@@ -332,6 +335,211 @@ class ScheduleGridView extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  void _showClassDetailSheet(
+    BuildContext context,
+    WidgetRef ref,
+    ClassSchedule schedule,
+    Course course,
+    bool isCurrentClass,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor =
+        isDark ? AppColors.darkSurface : AppColors.surface;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: surfaceColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return Padding(
+          padding: const EdgeInsets.all(AppSizes.spacing24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Barra de arrastre
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: AppSizes.spacing16),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? AppColors.darkSurfaceVariant
+                        : AppColors.surfaceVariant,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              // Encabezado con color del curso
+              Container(
+                padding: const EdgeInsets.all(AppSizes.spacing16),
+                decoration: BoxDecoration(
+                  color: Color(course.colorValue).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 4,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: Color(course.colorValue),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: AppSizes.spacing16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            course.name,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(course.colorValue),
+                                ),
+                          ),
+                          const SizedBox(height: AppSizes.spacing4),
+                          Text(
+                            course.code,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (isCurrentClass)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSizes.spacing8,
+                          vertical: AppSizes.spacing4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Color(course.colorValue),
+                          borderRadius: BorderRadius.circular(
+                            AppSizes.radiusFull,
+                          ),
+                        ),
+                        child: const Text(
+                          'En curso',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSizes.spacing20),
+
+              // Detalles de la clase
+              _buildDetailRow(
+                context,
+                Iconsax.clock,
+                '${schedule.startTime.format()} - ${schedule.endTime.format()}',
+              ),
+              const SizedBox(height: AppSizes.spacing12),
+              _buildDetailRow(
+                context,
+                Iconsax.calendar,
+                _getDayName(schedule.dayOfWeek),
+              ),
+              if (schedule.location != null) ...[
+                const SizedBox(height: AppSizes.spacing12),
+                _buildDetailRow(
+                  context,
+                  Iconsax.location,
+                  schedule.location!,
+                ),
+              ],
+              if (schedule.professor != null) ...[
+                const SizedBox(height: AppSizes.spacing12),
+                _buildDetailRow(
+                  context,
+                  Iconsax.profile_2user,
+                  schedule.professor!,
+                ),
+              ],
+              const SizedBox(height: AppSizes.spacing24),
+
+              // Botón Editar
+              FilledButton.icon(
+                onPressed: () {
+                  Navigator.pop(sheetContext);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          ScheduleFormScreen(schedule: schedule),
+                    ),
+                  );
+                },
+                icon: const Icon(Iconsax.edit),
+                label: const Text('Editar'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailRow(
+    BuildContext context,
+    IconData icon,
+    String text,
+  ) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(AppSizes.spacing8),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+          ),
+          child: Icon(
+            icon,
+            size: AppSizes.iconSmall,
+            color: AppColors.primary,
+          ),
+        ),
+        const SizedBox(width: AppSizes.spacing12),
+        Expanded(
+          child: Text(
+            text,
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _getDayName(DayOfWeek day) {
+    switch (day) {
+      case DayOfWeek.monday:
+        return 'Lunes';
+      case DayOfWeek.tuesday:
+        return 'Martes';
+      case DayOfWeek.wednesday:
+        return 'Miércoles';
+      case DayOfWeek.thursday:
+        return 'Jueves';
+      case DayOfWeek.friday:
+        return 'Viernes';
+      case DayOfWeek.saturday:
+        return 'Sábado';
+      case DayOfWeek.sunday:
+        return 'Domingo';
+    }
   }
 
   DayOfWeek _getDayOfWeek(int weekday) {

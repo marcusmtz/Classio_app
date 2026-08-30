@@ -48,10 +48,12 @@ class _EvaluationsScreenState extends ConsumerState<EvaluationsScreen>
     final hasFilters = filters.hasActiveFilters;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Usar evaluaciones filtradas solo en la vista de lista
+    // Usar evaluaciones filtradas solo en la vista de lista.
+    // Sin filtros, se muestran las activas (pendientes + completadas por vencer)
+    // para que no desaparezcan antes de su fecha límite.
     final listEvaluations = hasFilters
         ? filteredEvaluations
-        : ref.watch(pendingEvaluationsProvider);
+        : ref.watch(activeEvaluationsProvider);
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,

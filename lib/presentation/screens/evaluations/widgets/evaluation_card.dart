@@ -70,9 +70,11 @@ class EvaluationCard extends ConsumerWidget {
             ),
           ],
         ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
+        child: Opacity(
+          opacity: evaluation.isCompleted ? 0.55 : 1.0,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
             onTap: () {
               Navigator.push(
                 context,
@@ -107,10 +109,19 @@ class EvaluationCard extends ConsumerWidget {
                               evaluation.title,
                               style: TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: evaluation.isCompleted
+                                    ? FontWeight.w500
+                                    : FontWeight.w600,
+                                decoration: evaluation.isCompleted
+                                    ? TextDecoration.lineThrough
+                                    : TextDecoration.none,
                                 color: isDark
-                                    ? AppColors.darkTextPrimary
-                                    : AppColors.textPrimary,
+                                    ? (evaluation.isCompleted
+                                        ? AppColors.darkTextSecondary
+                                        : AppColors.darkTextPrimary)
+                                    : (evaluation.isCompleted
+                                        ? AppColors.textSecondary
+                                        : AppColors.textPrimary),
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -145,6 +156,9 @@ class EvaluationCard extends ConsumerWidget {
                         _formatDate(evaluation.dueDate),
                         style: TextStyle(
                           fontSize: 13,
+                          decoration: evaluation.isCompleted
+                              ? TextDecoration.lineThrough
+                              : TextDecoration.none,
                           color: isDark
                               ? AppColors.darkTextSecondary
                               : AppColors.textSecondary,
@@ -191,6 +205,7 @@ class EvaluationCard extends ConsumerWidget {
                 ],
               ),
             ),
+          ),
           ),
         ),
       ),

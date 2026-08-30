@@ -34,6 +34,20 @@ final pendingEvaluationsProvider = Provider<List<Evaluation>>((ref) {
     ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
 });
 
+/// Evaluaciones activas: las pendientes más las completadas cuya fecha límite
+/// aún no ha pasado (para que no desaparezcan de la vista antes de su vencimiento).
+final activeEvaluationsProvider = Provider<List<Evaluation>>((ref) {
+  final evals = ref.watch(evaluationsProvider);
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  return evals
+      .where((e) =>
+          !e.isCompleted ||
+          (e.isCompleted && !e.dueDate.isBefore(today)))
+      .toList()
+    ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
+});
+
 final overdueEvaluationsProvider = Provider<List<Evaluation>>((ref) {
   final evals = ref.watch(evaluationsProvider);
   final now = DateTime.now();
