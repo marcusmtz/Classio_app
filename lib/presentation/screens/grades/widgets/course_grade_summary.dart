@@ -21,7 +21,11 @@ class CourseGradeSummary extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final totalWeight = grades.fold<double>(0, (sum, g) => sum + g.weight);
+    final completedWeight = grades.where((g) => g.score != null).fold<double>(0, (sum, g) => sum + g.weight);
+    final completedCount = grades.where((g) => g.score != null).length;
+    final pendingCount = grades.length - completedCount;
     final remainingWeight = 100 - totalWeight;
+    final weightStatusColor = totalWeight > 100 ? Colors.red.shade200 : totalWeight == 100 ? Colors.white : Colors.white.withValues(alpha: 0.9);
 
     return Container(
       margin: const EdgeInsets.all(AppSizes.spacing16),
@@ -91,7 +95,7 @@ class CourseGradeSummary extends ConsumerWidget {
                 child: _buildStatCard(
                   context,
                   label: 'Promedio',
-                  value: average != null ? average!.toStringAsFixed(2) : 'N/A',
+                  value: average != null ? average!.toStringAsFixed(2) : '—',
                   icon: Iconsax.chart_1,
                 ),
               ),
@@ -99,13 +103,28 @@ class CourseGradeSummary extends ConsumerWidget {
               Expanded(
                 child: _buildStatCard(
                   context,
-                  label: 'Notas',
+                  label: 'Evaluaciones',
                   value: '${grades.length}',
                   icon: Iconsax.clipboard_text,
                 ),
               ),
+              const SizedBox(width: AppSizes.spacing12),
+              Expanded(
+                child: _buildStatCard(
+                  context,
+                  label: 'Pendientes',
+                  value: '$pendingCount',
+                  icon: Iconsax.clock,
+                ),
+              ),
             ],
           ),
+          const SizedBox(height: AppSizes.spacing8),
+          Text(
+            '$completedCount calificadas • $pendingCount pendientes',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white.withValues(alpha: 0.9)),
+          ),
+          const SizedBox(height: AppSizes.spacing12),
           const SizedBox(height: AppSizes.spacing12),
           Container(
             padding: const EdgeInsets.all(AppSizes.spacing16),
@@ -119,7 +138,7 @@ class CourseGradeSummary extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Ponderación Completada',
+                      'Ponderación planificada',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Colors.white,
                           ),
@@ -127,7 +146,7 @@ class CourseGradeSummary extends ConsumerWidget {
                     Text(
                       '${totalWeight.toStringAsFixed(1)}%',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.white,
+                            color: weightStatusColor,
                             fontWeight: FontWeight.bold,
                           ),
                     ),
@@ -136,33 +155,63 @@ class CourseGradeSummary extends ConsumerWidget {
                 const SizedBox(height: AppSizes.spacing8),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(AppSizes.radiusFull),
-                  child: LinearProgressIndicator(
-                    value: totalWeight / 100,
-                    minHeight: 8,
-                    backgroundColor: Colors.white.withValues(alpha: 0.3),
-                    valueColor:
-                        const AlwaysStoppedAnimation<Color>(Colors.white),
+                  child: Stack(
+                    children: [
+                      LinearProgressIndicator(
+                        value: (totalWeight / 100).clamp(0.0, 1.0),
+                        minHeight: 8,
+                        backgroundColor: Colors.white.withValues(alpha: 0.3),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          totalWeight > 100 ? AppColors.error : Colors.white,
+                        ),
+                      ),
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final completedFraction = totalWeight > 0 ? (completedWeight / totalWeight).clamp(0.0, 1.0) : 0.0;
+                          return Container(
+                            height: 8,
+                            width: constraints.maxWidth * completedFraction * (totalWeight / 100).clamp(0.0, 1.0),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.55),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: AppSizes.spacing8),
+                const SizedBox(height: AppSizes.spacing6),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Restante',
+                      'Calificado ${completedWeight.toStringAsFixed(1)}%',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Colors.white.withValues(alpha: 0.9),
                           ),
                     ),
                     Text(
-                      '${remainingWeight.toStringAsFixed(1)}%',
+                      remainingWeight >= 0
+                          ? 'Restante ${remainingWeight.toStringAsFixed(1)}%'
+                          : 'Excedido ${(remainingWeight.abs()).toStringAsFixed(1)}%',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.9),
+                            color: remainingWeight < 0 ? Colors.red.shade200 : Colors.white.withValues(alpha: 0.9),
                             fontWeight: FontWeight.w600,
                           ),
                     ),
                   ],
                 ),
+                if (totalWeight != 100)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(
+                      totalWeight < 100
+                          ? 'Falta planificar ${(100 - totalWeight).toStringAsFixed(1)}% para completar 100%'
+                          : 'Revisa pesos: superas 100%',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white.withValues(alpha: 0.95), fontStyle: FontStyle.italic),
+                    ),
+                  ),
               ],
             ),
           ),

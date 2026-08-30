@@ -6,6 +6,8 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../providers/courses_provider.dart';
+import '../../providers/semester_provider.dart';
+import '../../providers/app_settings_provider.dart';
 import '../../../data/models/course_model.dart';
 import 'course_detail_screen.dart';
 import 'course_form_screen.dart';
@@ -59,9 +61,11 @@ class _CoursesScreenState extends ConsumerState<CoursesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final allCourses = ref.watch(activeCoursesProvider);
+    final allCourses = ref.watch(filteredActiveCoursesProvider);
     final coursesToShow =
         _searchController.text.isEmpty ? allCourses : _filteredCourses;
+    final semesters = ref.watch(semestersProvider);
+    final activeSemesterId = ref.watch(appSettingsProvider).activeSemesterId;
 
     return Scaffold(
       appBar: AppBar(
@@ -90,14 +94,18 @@ class _CoursesScreenState extends ConsumerState<CoursesScreen> {
             ),
         ],
       ),
-      body: allCourses.isEmpty
-          ? const EmptyCoursesState()
-          : coursesToShow.isEmpty && _searchController.text.isNotEmpty
-              ? _buildNoResultsState()
-              : ListView.builder(
-                  padding: const EdgeInsets.all(AppSizes.spacing16),
-                  itemCount: coursesToShow.length,
-                  itemBuilder: (context, index) {
+      body: Column(
+        children: [
+          if (semesters.isNotEmpty) _buildSemesterFilter(context, ref, semesters, activeSemesterId),
+          Expanded(
+            child: allCourses.isEmpty
+                ? const EmptyCoursesState()
+                : coursesToShow.isEmpty && _searchController.text.isNotEmpty
+                    ? _buildNoResultsState()
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(AppSizes.spacing16),
+                        itemCount: coursesToShow.length,
+                        itemBuilder: (context, index) {
                     final course = coursesToShow[index];
                     return CourseCard(
                       course: course,
@@ -128,6 +136,9 @@ class _CoursesScreenState extends ConsumerState<CoursesScreen> {
                         .slideX(begin: 0.2, end: 0);
                   },
                 ),
+              ),
+          ],
+        ),
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'courses_fab',
         onPressed: () {
@@ -140,6 +151,33 @@ class _CoursesScreenState extends ConsumerState<CoursesScreen> {
         },
         icon: const Icon(Iconsax.add),
         label: const Text(AppStrings.addCourse),
+      ),
+    );
+  }
+
+  Widget _buildSemesterFilter(BuildContext context, WidgetRef ref, List<dynamic> semesters, String? activeId) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: AppSizes.spacing16, vertical: 8),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            ChoiceChip(
+              label: const Text('Todos'),
+              selected: activeId == null,
+              onSelected: (_) => ref.read(appSettingsProvider.notifier).updateActiveSemesterId(null),
+            ),
+            const SizedBox(width: 8),
+            ...semesters.where((s) => !s.isArchived).map((s) => Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ChoiceChip(
+                    label: Text(s.name),
+                    selected: activeId == s.id,
+                    onSelected: (_) => ref.read(appSettingsProvider.notifier).updateActiveSemesterId(s.id),
+                  ),
+                )),
+          ],
+        ),
       ),
     );
   }
@@ -183,7 +221,7 @@ class _CoursesScreenState extends ConsumerState<CoursesScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text(AppStrings.deleteCourseConfirm),
-        content: Text('¿Estás seguro de eliminar "$courseName"?'),
+        content: Text('¿Eliminar "$courseName"? Podrás deshacer durante 5 segundos. Se eliminarán horarios, evaluaciones y notas asociadas.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -191,12 +229,19 @@ class _CoursesScreenState extends ConsumerState<CoursesScreen> {
           ),
           TextButton(
             onPressed: () {
-              ref.read(coursesProvider.notifier).deleteCourse(courseId);
               Navigator.pop(context);
+              ref.read(coursesProvider.notifier).deleteCourse(courseId);
+              ScaffoldMessenger.of(context).clearSnackBars();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(AppStrings.deleteSuccess),
+                SnackBar(
+                  content: Text('"$courseName" eliminado'),
                   backgroundColor: AppColors.success,
+                  action: SnackBarAction(
+                    label: 'Deshacer',
+                    textColor: Colors.white,
+                    onPressed: () => ref.read(coursesProvider.notifier).undoDelete(courseId),
+                  ),
+                  duration: const Duration(seconds: 5),
                 ),
               );
             },

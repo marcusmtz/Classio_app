@@ -26,6 +26,9 @@ class Course extends Equatable {
   @HiveField(6)
   final bool isActive;
 
+  @HiveField(7)
+  final String? semesterId;
+
   const Course({
     required this.id,
     required this.name,
@@ -34,6 +37,7 @@ class Course extends Equatable {
     required this.createdAt,
     this.updatedAt,
     this.isActive = true,
+    this.semesterId,
   });
 
   Course copyWith({
@@ -44,6 +48,7 @@ class Course extends Equatable {
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? isActive,
+    String? semesterId,
   }) {
     return Course(
       id: id ?? this.id,
@@ -53,10 +58,24 @@ class Course extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       isActive: isActive ?? this.isActive,
+      semesterId: semesterId ?? this.semesterId,
+    );
+  }
+
+  Course copyWithNullableSemester(String? semesterId) {
+    return Course(
+      id: id,
+      name: name,
+      code: code,
+      colorValue: colorValue,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      isActive: isActive,
+      semesterId: semesterId,
     );
   }
 
   @override
   List<Object?> get props =>
-      [id, name, code, colorValue, createdAt, updatedAt, isActive];
+      [id, name, code, colorValue, createdAt, updatedAt, isActive, semesterId];
 }

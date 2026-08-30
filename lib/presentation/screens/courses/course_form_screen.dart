@@ -6,6 +6,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../data/models/course_model.dart';
 import '../../providers/courses_provider.dart';
+import '../../providers/semester_provider.dart';
+import '../../providers/app_settings_provider.dart';
 import 'widgets/color_picker_grid.dart';
 
 class CourseFormScreen extends ConsumerStatefulWidget {
@@ -22,6 +24,7 @@ class _CourseFormScreenState extends ConsumerState<CourseFormScreen> {
   final _nameController = TextEditingController();
   final _codeController = TextEditingController();
   int _selectedColorValue = AppColors.courseColors[0].value;
+  String? _selectedSemesterId;
 
   bool get isEditing => widget.course != null;
 
@@ -32,6 +35,15 @@ class _CourseFormScreenState extends ConsumerState<CourseFormScreen> {
       _nameController.text = widget.course!.name;
       _codeController.text = widget.course!.code;
       _selectedColorValue = widget.course!.colorValue;
+      _selectedSemesterId = widget.course!.semesterId;
+    } else {
+      // Default to active semester if exists
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final activeId = ref.read(appSettingsProvider).activeSemesterId;
+        if (activeId != null && mounted) {
+          setState(() => _selectedSemesterId = activeId);
+        }
+      });
     }
 
     // Agregar listeners para actualizar la vista previa en tiempo real
@@ -93,6 +105,53 @@ class _CourseFormScreenState extends ConsumerState<CourseFormScreen> {
                   return 'Por favor ingresa el código del curso';
                 }
                 return null;
+              },
+            ),
+            const SizedBox(height: AppSizes.spacing16),
+            // Semester selector
+            Consumer(
+              builder: (context, ref, child) {
+                final semesters = ref.watch(semestersProvider);
+                final activeSemesters = semesters.where((s) => !s.isArchived).toList();
+                if (activeSemesters.isEmpty) {
+                  return Container(
+                    padding: const EdgeInsets.all(AppSizes.spacing12),
+                    decoration: BoxDecoration(
+                      color: AppColors.info.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Iconsax.info_circle, color: AppColors.info, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Sin periodos creados. Crea uno en Configuración → Periodos.',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.info),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                return DropdownButtonFormField<String?>(
+                  value: _selectedSemesterId,
+                  decoration: const InputDecoration(
+                    labelText: 'Periodo académico (opcional)',
+                    prefixIcon: Icon(Iconsax.calendar_1),
+                  ),
+                  items: [
+                    const DropdownMenuItem<String?>(
+                      value: null,
+                      child: Text('Sin periodo'),
+                    ),
+                    ...activeSemesters.map((s) => DropdownMenuItem<String?>(
+                          value: s.id,
+                          child: Text(s.name),
+                        )),
+                  ],
+                  onChanged: (v) => setState(() => _selectedSemesterId = v),
+                );
               },
             ),
             const SizedBox(height: AppSizes.spacing32),
@@ -206,18 +265,18 @@ class _CourseFormScreenState extends ConsumerState<CourseFormScreen> {
     final coursesNotifier = ref.read(coursesProvider.notifier);
 
     if (isEditing) {
-      coursesNotifier.updateCourse(
-        widget.course!.copyWith(
-          name: _nameController.text.trim(),
-          code: _codeController.text.trim().toUpperCase(),
-          colorValue: _selectedColorValue,
-        ),
-      );
+      final updated = widget.course!.copyWith(
+            name: _nameController.text.trim(),
+            code: _codeController.text.trim().toUpperCase(),
+            colorValue: _selectedColorValue,
+          ).copyWithNullableSemester(_selectedSemesterId);
+      coursesNotifier.updateCourse(updated);
     } else {
       coursesNotifier.addCourse(
         name: _nameController.text.trim(),
         code: _codeController.text.trim().toUpperCase(),
         colorValue: _selectedColorValue,
+        semesterId: _selectedSemesterId,
       );
     }
 

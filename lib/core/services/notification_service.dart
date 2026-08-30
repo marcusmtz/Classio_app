@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/foundation.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -14,6 +16,11 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
 
   bool _initialized = false;
+
+  final StreamController<String?> _clickController =
+      StreamController<String?>.broadcast();
+
+  Stream<String?> get onNotificationClick => _clickController.stream;
 
   /// Inicializar el servicio de notificaciones
   Future<void> initialize() async {
@@ -48,11 +55,20 @@ class NotificationService {
 
   /// Manejar tap en notificación
   void _onNotificationTapped(NotificationResponse response) {
-    // TODO: Navegar a la evaluación específica
     final payload = response.payload;
     if (payload != null) {
-      debugPrint('Notification tapped with payload: $payload');
+      _clickController.add(payload);
     }
+  }
+
+  /// Obtener payload si la app se abrió desde una notificación (terminated)
+  Future<String?> getInitialPayload() async {
+    if (!_initialized) return null;
+    final details = await _notifications.getNotificationAppLaunchDetails();
+    if (details != null && details.didNotificationLaunchApp) {
+      return details.notificationResponse?.payload;
+    }
+    return null;
   }
 
   /// Solicitar permisos (especialmente para iOS)

@@ -23,6 +23,7 @@ void main() {
         ProviderScope(
           overrides: [
             activeCoursesProvider.overrideWith((ref) => []),
+            filteredActiveCoursesProvider.overrideWith((ref) => []),
           ],
           child: const MaterialApp(home: CoursesScreen()),
         ),
@@ -58,6 +59,7 @@ void main() {
         ProviderScope(
           overrides: [
             activeCoursesProvider.overrideWith((ref) => courses),
+            filteredActiveCoursesProvider.overrideWith((ref) => courses),
           ],
           child: const MaterialApp(home: CoursesScreen()),
         ),

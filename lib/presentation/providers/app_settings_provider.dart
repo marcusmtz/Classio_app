@@ -97,4 +97,9 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
       gradePassingValue: passingValue,
     );
   }
+
+  Future<void> updateActiveSemesterId(String? semesterId) async {
+    await _repository.updateActiveSemesterId(semesterId);
+    state = state.copyWithNullableActiveSemester(semesterId);
+  }
 }

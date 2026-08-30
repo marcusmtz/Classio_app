@@ -101,73 +101,75 @@ class _IntroSlidesScreenState extends ConsumerState<IntroSlidesScreen> {
         child: Padding(
           padding: EdgeInsets.symmetric(
             horizontal: size.width * 0.08,
-            vertical: size.height * 0.05,
+            vertical: size.height * 0.02,
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Spacer(flex: 1),
+              const Spacer(flex: 2),
               // Decorative circles
               Stack(
                 alignment: Alignment.center,
                 children: [
                   Container(
-                    width: size.width * 0.4,
-                    height: size.width * 0.4,
+                    width: size.width * 0.35,
+                    height: size.width * 0.35,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white.withValues(alpha: 0.1),
                     ),
                   ),
                   Container(
-                    width: size.width * 0.3,
-                    height: size.width * 0.3,
+                    width: size.width * 0.26,
+                    height: size.width * 0.26,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white.withValues(alpha: 0.15),
                     ),
                   ),
                   Container(
-                    width: size.width * 0.2,
-                    height: size.width * 0.2,
+                    width: size.width * 0.18,
+                    height: size.width * 0.18,
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white,
                     ),
                     child: Icon(
                       Iconsax.book_1,
-                      size: size.width * 0.1,
+                      size: size.width * 0.09,
                       color: const Color(0xFF6366F1),
                     ),
                   ),
                 ],
               ),
-              const Spacer(flex: 1),
+              const Spacer(flex: 2),
               Text(
                 'Bienvenido a Classio',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: size.width * 0.08,
+                  fontSize: size.width * 0.075,
                   fontWeight: FontWeight.bold,
                   height: 1.2,
                 ),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: size.height * 0.02),
+              SizedBox(height: size.height * 0.015),
               Text(
                 'Tu planificador académico universitario que funciona completamente offline',
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.9),
-                  fontSize: size.width * 0.04,
-                  height: 1.5,
+                  fontSize: size.width * 0.038,
+                  height: 1.4,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
               ),
-              SizedBox(height: size.height * 0.03),
+              SizedBox(height: size.height * 0.025),
               Container(
                 padding: EdgeInsets.symmetric(
-                  horizontal: size.width * 0.06,
-                  vertical: size.height * 0.015,
+                  horizontal: size.width * 0.05,
+                  vertical: size.height * 0.012,
                 ),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
@@ -181,13 +183,13 @@ class _IntroSlidesScreenState extends ConsumerState<IntroSlidesScreen> {
                   'Organiza tu vida académica de forma simple',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: size.width * 0.032,
+                    fontSize: size.width * 0.03,
                     fontWeight: FontWeight.w500,
                   ),
                   textAlign: TextAlign.center,
                 ),
               ),
-              const Spacer(flex: 1),
+              const Spacer(flex: 2),
             ],
           ),
         ),
@@ -423,99 +425,49 @@ class _IntroSlidesScreenState extends ConsumerState<IntroSlidesScreen> {
         child: Padding(
           padding: EdgeInsets.symmetric(
             horizontal: size.width * 0.08,
-            vertical: size.height * 0.05,
+            vertical: size.height * 0.03,
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Spacer(flex: 1),
+              const Spacer(flex: 2),
               // Shield with checkmark - ANIMADO Y CLICKEABLE
               GestureDetector(
                 onTap: _onDonePress,
-                child: TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0.0, end: 1.0),
-                  duration: const Duration(milliseconds: 1500),
-                  curve: Curves.easeInOut,
-                  builder: (context, value, child) {
-                    // Animación de pulso (escala)
-                    final scale = 1.0 + (0.1 * (0.5 - (value - 0.5).abs()) * 2);
-
-                    return Transform.scale(
-                      scale: scale,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          // Círculo exterior con animación de opacidad
-                          Container(
-                            width: size.width * 0.32,
-                            height: size.width * 0.32,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color:
-                                  Colors.white.withValues(alpha: 0.15 * value),
-                            ),
-                          ),
-                          // Círculo interior clickeable
-                          Container(
-                            width: size.width * 0.24,
-                            height: size.width * 0.24,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.white.withValues(alpha: 0.3),
-                                  blurRadius: 20,
-                                  spreadRadius: 5,
-                                ),
-                              ],
-                            ),
-                            child: Icon(
-                              Iconsax.shield_tick,
-                              size: size.width * 0.12,
-                              color: const Color(0xFF3B82F6),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                  onEnd: () {
-                    // Reiniciar animación en loop
-                    setState(() {});
-                  },
-                ),
+                child: _AnimatedShield(size: size),
               ),
-              const Spacer(flex: 1),
+              const Spacer(flex: 2),
               Text(
                 'Privacidad Total',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: size.width * 0.07,
+                  fontSize: size.width * 0.065,
                   fontWeight: FontWeight.bold,
                   height: 1.2,
                 ),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: size.height * 0.02),
+              SizedBox(height: size.height * 0.015),
               Text(
                 'Todos tus datos se guardan localmente en tu dispositivo. No necesitas internet para usar Classio',
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.9),
-                  fontSize: size.width * 0.037,
-                  height: 1.6,
+                  fontSize: size.width * 0.035,
+                  height: 1.5,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
               ),
-              SizedBox(height: size.height * 0.03),
+              SizedBox(height: size.height * 0.025),
               _buildFeatureRow(
                   Iconsax.lock, 'Sin registro ni inicio de sesión', size),
-              SizedBox(height: size.height * 0.02),
+              SizedBox(height: size.height * 0.015),
               _buildFeatureRow(Iconsax.mobile, 'Funciona sin conexión', size),
-              SizedBox(height: size.height * 0.02),
+              SizedBox(height: size.height * 0.015),
               _buildFeatureRow(
                   Iconsax.shield_security, 'Tus datos son solo tuyos', size),
-              const Spacer(flex: 1),
+              const Spacer(flex: 2),
             ],
           ),
         ),
@@ -715,6 +667,89 @@ class _IntroSlidesScreenState extends ConsumerState<IntroSlidesScreen> {
       MaterialPageRoute(
         builder: (context) => const MainScreen(showTutorial: true),
       ),
+    );
+  }
+}
+
+// Widget separado para la animación del escudo
+class _AnimatedShield extends StatefulWidget {
+  final Size size;
+
+  const _AnimatedShield({required this.size});
+
+  @override
+  State<_AnimatedShield> createState() => _AnimatedShieldState();
+}
+
+class _AnimatedShieldState extends State<_AnimatedShield>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _scaleAnimation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Círculo exterior con animación de opacidad
+              Container(
+                width: widget.size.width * 0.32,
+                height: widget.size.width * 0.32,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color:
+                      Colors.white.withValues(alpha: 0.15 * _controller.value),
+                ),
+              ),
+              // Círculo interior clickeable
+              Container(
+                width: widget.size.width * 0.24,
+                height: widget.size.width * 0.24,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      blurRadius: 20,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Iconsax.shield_tick,
+                  size: widget.size.width * 0.12,
+                  color: const Color(0xFF3B82F6),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

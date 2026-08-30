@@ -34,10 +34,10 @@ class Grade extends Equatable {
   final GradeType type;
 
   @HiveField(4)
-  final double score;
+  final double? score;
 
   @HiveField(5)
-  final double maxScore;
+  final double? maxScore;
 
   @HiveField(6)
   final double weight;
@@ -56,13 +56,16 @@ class Grade extends Equatable {
     required this.courseId,
     required this.title,
     required this.type,
-    required this.score,
-    required this.maxScore,
+    this.score,
+    this.maxScore,
     required this.weight,
     required this.date,
     this.notes,
     required this.createdAt,
   });
+
+  bool get isPending => score == null || maxScore == null;
+  bool get isCompleted => !isPending;
 
   Grade copyWith({
     String? id,
@@ -87,6 +90,21 @@ class Grade extends Equatable {
       date: date ?? this.date,
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  Grade copyWithNullableScore({double? score, double? maxScore}) {
+    return Grade(
+      id: id,
+      courseId: courseId,
+      title: title,
+      type: type,
+      score: score,
+      maxScore: maxScore,
+      weight: weight,
+      date: date,
+      notes: notes,
+      createdAt: createdAt,
     );
   }
 

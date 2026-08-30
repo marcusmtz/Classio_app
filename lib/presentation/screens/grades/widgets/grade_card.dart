@@ -8,6 +8,7 @@ import '../../../../core/constants/app_sizes.dart';
 import '../../../../data/models/grade_model.dart';
 import '../../../../data/models/course_model.dart';
 import '../../../providers/grades_provider.dart';
+import '../../../providers/app_settings_provider.dart';
 import '../grade_form_screen.dart';
 
 class GradeCard extends ConsumerWidget {
@@ -22,7 +23,8 @@ class GradeCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final percentage = (grade.score / grade.maxScore) * 100;
+    final isPending = grade.isPending;
+    final percentage = !isPending ? (grade.score! / grade.maxScore!) * 100 : 0.0;
     final dateFormat = DateFormat('d MMM yyyy', 'es_ES');
 
     return Padding(
@@ -119,93 +121,132 @@ class GradeCard extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '${grade.score.toStringAsFixed(1)}',
-                        style:
-                            Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: _getScoreColor(percentage),
-                                ),
-                      ),
-                      Text(
-                        '/ ${grade.maxScore.toStringAsFixed(1)}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSizes.spacing12),
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  if (isPending)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Porcentaje: ',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                            Text(
-                              '${percentage.toStringAsFixed(1)}%',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.w600,
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: AppColors.warning.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(AppSizes.radiusFull),
+                          ),
+                          child: const Text('Pendiente', style: TextStyle(color: AppColors.warning, fontWeight: FontWeight.w600, fontSize: 11)),
+                        ),
+                        const SizedBox(height: 4),
+                        Text('${grade.weight.toStringAsFixed(1)}%', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.primary, fontWeight: FontWeight.w600)),
+                      ],
+                    )
+                  else
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '${grade.score!.toStringAsFixed(1)}',
+                          style:
+                              Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
                                     color: _getScoreColor(percentage),
                                   ),
-                            ),
-                          ],
                         ),
-                        const SizedBox(height: AppSizes.spacing4),
-                        Row(
-                          children: [
-                            Text(
-                              'Ponderación: ',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                            Text(
-                              '${grade.weight.toStringAsFixed(1)}%',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.primary,
-                                  ),
-                            ),
-                          ],
+                        Text(
+                          '/ ${grade.maxScore!.toStringAsFixed(1)}',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
                         ),
                       ],
                     ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSizes.spacing12,
-                      vertical: AppSizes.spacing6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _getScoreColor(percentage).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(AppSizes.radiusFull),
-                    ),
-                    child: Text(
-                      _getScoreLabel(percentage),
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: _getScoreColor(percentage),
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
-                  ),
                 ],
               ),
+              const SizedBox(height: AppSizes.spacing12),
+              if (isPending)
+                InkWell(
+                  onTap: () => _showQuickAddScore(context, ref),
+                  borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+                  child: Container(
+                    padding: const EdgeInsets.all(AppSizes.spacing12),
+                    decoration: BoxDecoration(
+                      color: AppColors.warning.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+                      border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Iconsax.edit, color: AppColors.warning, size: 18),
+                        const SizedBox(width: 8),
+                        const Expanded(child: Text('Toca para ingresar la nota', style: TextStyle(color: AppColors.warning, fontWeight: FontWeight.w600))),
+                        Text('${grade.weight.toStringAsFixed(1)}%', style: const TextStyle(color: AppColors.warning, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                'Porcentaje: ',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              Text(
+                                '${percentage.toStringAsFixed(1)}%',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: _getScoreColor(percentage),
+                                    ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: AppSizes.spacing4),
+                          Row(
+                            children: [
+                              Text(
+                                'Ponderación: ',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              Text(
+                                '${grade.weight.toStringAsFixed(1)}%',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.primary,
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSizes.spacing12,
+                        vertical: AppSizes.spacing6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _getScoreColor(percentage).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(AppSizes.radiusFull),
+                      ),
+                      child: Text(
+                        _getScoreLabel(percentage),
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: _getScoreColor(percentage),
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
               if (grade.notes != null && grade.notes!.isNotEmpty) ...[
                 const SizedBox(height: AppSizes.spacing12),
                 Container(
@@ -317,16 +358,86 @@ class GradeCard extends ConsumerWidget {
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () async {
-              await ref.read(gradesProvider.notifier).deleteGrade(grade.id);
-              if (context.mounted) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Nota eliminada')),
-                );
-              }
+            onPressed: () {
+              Navigator.pop(context);
+              ref.read(gradesProvider.notifier).deleteGrade(grade.id);
+              ScaffoldMessenger.of(context).clearSnackBars();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('"${grade.title}" eliminada'),
+                  action: SnackBarAction(
+                    label: 'Deshacer',
+                    onPressed: () {
+                      ref.read(gradesProvider.notifier).undoDelete(grade.id);
+                    },
+                  ),
+                  duration: const Duration(seconds: 5),
+                ),
+              );
             },
             child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showQuickAddScore(BuildContext context, WidgetRef ref) {
+    final scoreController = TextEditingController();
+    final maxController = TextEditingController(text: ref.read(appSettingsProvider).gradeMaxValue.toStringAsFixed(1));
+    final formKey = GlobalKey<FormState>();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Ingresar nota: ${grade.title}'),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: scoreController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(labelText: 'Nota obtenida', prefixIcon: Icon(Iconsax.star)),
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Requerido';
+                  final val = double.tryParse(v);
+                  if (val == null) return 'Número inválido';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: maxController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(labelText: 'Nota máxima', prefixIcon: Icon(Iconsax.star_1)),
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Requerido';
+                  final val = double.tryParse(v);
+                  if (val == null || val <= 0) return 'Inválido';
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          FilledButton(
+            onPressed: () async {
+              if (!formKey.currentState!.validate()) return;
+              final score = double.parse(scoreController.text);
+              final max = double.parse(maxController.text);
+              try {
+                await ref.read(gradesProvider.notifier).updateGradeScore(gradeId: grade.id, score: score, maxScore: max);
+                if (context.mounted) Navigator.pop(context);
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error));
+                }
+              }
+            },
+            child: const Text('Guardar'),
           ),
         ],
       ),

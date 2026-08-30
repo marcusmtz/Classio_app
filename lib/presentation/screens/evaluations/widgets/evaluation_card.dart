@@ -353,7 +353,7 @@ class EvaluationCard extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('¿Eliminar evaluación?'),
-        content: const Text('Esta acción no se puede deshacer.'),
+        content: const Text('Podrás deshacer durante 5 segundos.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -361,12 +361,18 @@ class EvaluationCard extends ConsumerWidget {
           ),
           FilledButton(
             onPressed: () {
-              ref
-                  .read(evaluationsProvider.notifier)
-                  .deleteEvaluation(evaluation.id);
               Navigator.pop(context);
+              ref.read(evaluationsProvider.notifier).deleteEvaluation(evaluation.id);
+              ScaffoldMessenger.of(context).clearSnackBars();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Evaluación eliminada')),
+                SnackBar(
+                  content: Text('"${evaluation.title}" eliminada'),
+                  action: SnackBarAction(
+                    label: 'Deshacer',
+                    onPressed: () => ref.read(evaluationsProvider.notifier).undoDelete(evaluation.id),
+                  ),
+                  duration: const Duration(seconds: 5),
+                ),
               );
             },
             style: FilledButton.styleFrom(

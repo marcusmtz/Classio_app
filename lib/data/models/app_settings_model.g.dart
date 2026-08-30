@@ -33,13 +33,14 @@ class AppSettingsAdapter extends TypeAdapter<AppSettings> {
       gradeMinValue: fields[13] as double,
       gradeMaxValue: fields[14] as double,
       gradePassingValue: fields[15] as double,
+      activeSemesterId: fields[16] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, AppSettings obj) {
     writer
-      ..writeByte(16)
+      ..writeByte(17)
       ..writeByte(0)
       ..write(obj.themeMode)
       ..writeByte(1)
@@ -71,7 +72,9 @@ class AppSettingsAdapter extends TypeAdapter<AppSettings> {
       ..writeByte(14)
       ..write(obj.gradeMaxValue)
       ..writeByte(15)
-      ..write(obj.gradePassingValue);
+      ..write(obj.gradePassingValue)
+      ..writeByte(16)
+      ..write(obj.activeSemesterId);
   }
 
   @override

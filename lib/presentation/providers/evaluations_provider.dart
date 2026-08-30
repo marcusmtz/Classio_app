@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import '../../core/utils/undo_manager.dart';
 import '../../domain/usecases/calculate_evaluation_priority_usecase.dart';
 import '../../data/models/evaluation_model.dart';
 import '../../data/repositories/evaluation_repository.dart';
@@ -56,6 +57,7 @@ class EvaluationsNotifier extends StateNotifier<List<Evaluation>> {
   final Ref _ref;
   final _uuid = const Uuid();
   StreamSubscription? _evaluationsSubscription;
+  late final UndoManager<Evaluation> _undoManager;
 
   EvaluationsNotifier(
     this._repository,
@@ -63,6 +65,14 @@ class EvaluationsNotifier extends StateNotifier<List<Evaluation>> {
     this._calculatePriorityUseCase,
     this._ref,
   ) : super([]) {
+    _undoManager = UndoManager<Evaluation>(
+      duration: const Duration(seconds: 5),
+      onCommit: (evaluation) async {
+        await _repository.delete(evaluation.id);
+        await _notificationService.cancelEvaluationNotifications(evaluation.id);
+        _updateSmartNotifications();
+      },
+    );
     _loadEvaluations();
     _evaluationsSubscription = _repository.watch().listen((_) {
       _loadEvaluations();
@@ -70,7 +80,24 @@ class EvaluationsNotifier extends StateNotifier<List<Evaluation>> {
   }
 
   void _loadEvaluations() {
+    // No recargar si hay pending deletes (para mantener undo en memoria)
+    if (_undoManager.hasPending) return;
     state = _repository.getAll();
+  }
+
+  bool undoDelete(String id) {
+    final evaluation = _undoManager.undo(id);
+    if (evaluation != null) {
+      state = [...state, evaluation]..sort((a, b) => a.dueDate.compareTo(b.dueDate));
+      _handleNotificationsForEvaluation(evaluation);
+      _updateSmartNotifications();
+      return true;
+    }
+    return false;
+  }
+
+  Future<void> commitPendingDeletes() async {
+    await _undoManager.commitAll();
   }
 
   Future<void> addEvaluation({
@@ -118,13 +145,20 @@ class EvaluationsNotifier extends StateNotifier<List<Evaluation>> {
   }
 
   Future<void> deleteEvaluation(String id) async {
+    final evaluation = getEvaluationById(id);
+    if (evaluation == null) return;
+    // Optimistic remove
+    state = state.where((e) => e.id != id).toList();
+    _undoManager.stage(id, evaluation);
+    // Notificaciones se cancelan al commit, no ahora
+    _updateSmartNotifications();
+  }
+
+  // Borrado inmediato sin undo (para casos internos)
+  Future<void> deleteEvaluationImmediate(String id) async {
     await _repository.delete(id);
     state = state.where((e) => e.id != id).toList();
-
-    // Cancelar notificaciones
     await _notificationService.cancelEvaluationNotifications(id);
-
-    // Actualizar notificaciones inteligentes
     _updateSmartNotifications();
   }
 
@@ -221,6 +255,7 @@ class EvaluationsNotifier extends StateNotifier<List<Evaluation>> {
   @override
   void dispose() {
     _evaluationsSubscription?.cancel();
+    _undoManager.dispose();
     super.dispose();
   }
 }

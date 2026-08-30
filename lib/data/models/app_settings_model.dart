@@ -63,6 +63,9 @@ class AppSettings extends Equatable {
   @HiveField(15)
   final double gradePassingValue;
 
+  @HiveField(16)
+  final String? activeSemesterId;
+
   const AppSettings({
     this.themeMode = ThemeMode.system,
     this.notificationsEnabled = true,
@@ -80,6 +83,7 @@ class AppSettings extends Equatable {
     this.gradeMinValue = 1.0,
     this.gradeMaxValue = 7.0,
     this.gradePassingValue = 4.0,
+    this.activeSemesterId,
   });
 
   AppSettings copyWith({
@@ -99,6 +103,7 @@ class AppSettings extends Equatable {
     double? gradeMinValue,
     double? gradeMaxValue,
     double? gradePassingValue,
+    String? activeSemesterId,
   }) {
     return AppSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -117,6 +122,29 @@ class AppSettings extends Equatable {
       gradeMinValue: gradeMinValue ?? this.gradeMinValue,
       gradeMaxValue: gradeMaxValue ?? this.gradeMaxValue,
       gradePassingValue: gradePassingValue ?? this.gradePassingValue,
+      activeSemesterId: activeSemesterId ?? this.activeSemesterId,
+    );
+  }
+
+  AppSettings copyWithNullableActiveSemester(String? activeSemesterId) {
+    return AppSettings(
+      themeMode: themeMode,
+      notificationsEnabled: notificationsEnabled,
+      widgetEnabled: widgetEnabled,
+      language: language,
+      lastUpdated: lastUpdated,
+      showSaturday: showSaturday,
+      showSunday: showSunday,
+      userName: userName,
+      dailySummaryEnabled: dailySummaryEnabled,
+      criticalWeekEnabled: criticalWeekEnabled,
+      classReminderEnabled: classReminderEnabled,
+      lowGradeAlertEnabled: lowGradeAlertEnabled,
+      hasSeenTour: hasSeenTour,
+      gradeMinValue: gradeMinValue,
+      gradeMaxValue: gradeMaxValue,
+      gradePassingValue: gradePassingValue,
+      activeSemesterId: activeSemesterId,
     );
   }
 
@@ -138,5 +166,6 @@ class AppSettings extends Equatable {
         gradeMinValue,
         gradeMaxValue,
         gradePassingValue,
+        activeSemesterId,
       ];
 }

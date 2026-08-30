@@ -24,7 +24,7 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final courses = ref.watch(activeCoursesProvider);
+    final courses = ref.watch(filteredActiveCoursesProvider);
 
     // Si no hay curso seleccionado, seleccionar el primero
     if (_selectedCourseId == null && courses.isNotEmpty) {
@@ -95,7 +95,7 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
               heroTag: 'grades_fab',
               onPressed: () => _showAddGradeDialog(context, selectedCourse.id),
               icon: const Icon(Iconsax.add),
-              label: const Text('Agregar Nota'),
+              label: Text(courseGrades.isEmpty ? 'Crear evaluación' : 'Agregar evaluación'),
             )
           : null,
     );
@@ -245,16 +245,25 @@ class _GradesScreenState extends ConsumerState<GradesScreen> {
             ),
             const SizedBox(height: AppSizes.spacing16),
             Text(
-              'No hay notas',
+              'Planifica tu curso',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: AppSizes.spacing8),
             Text(
-              'Agrega tu primera nota para este curso',
+              'Crea evaluaciones con su ponderación (ej: Parcial 1 — 30%). Podrás dejar la nota pendiente y completarla después.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.textSecondary,
                   ),
               textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSizes.spacing16),
+            FilledButton.icon(
+              onPressed: () {
+                final sel = _selectedCourseId;
+                if (sel != null) _showAddGradeDialog(context, sel);
+              },
+              icon: const Icon(Iconsax.add),
+              label: const Text('Crear evaluación'),
             ),
           ],
         ),

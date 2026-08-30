@@ -5,6 +5,7 @@ import '../../data/models/course_model.dart';
 import '../../data/models/class_schedule_model.dart';
 import '../../data/models/evaluation_model.dart';
 import '../../data/models/grade_model.dart';
+import '../../data/models/semester_model.dart';
 import '../../data/models/app_settings_model.dart';
 
 class DataImportService {
@@ -28,6 +29,7 @@ class DataImportService {
 
       // Parsear datos
       final courses = await _parseCourses(data['courses'] as List?);
+      final semesters = await _parseSemesters(data['semesters'] as List?);
       final schedules = await _parseSchedules(data['schedule'] as List?);
       final evaluations = await _parseEvaluations(data['evaluations'] as List?);
       final grades = await _parseGrades(data['grades'] as List?);
@@ -36,6 +38,7 @@ class DataImportService {
 
       return ImportResult.success(
         courses: courses,
+        semesters: semesters,
         schedules: schedules,
         evaluations: evaluations,
         grades: grades,
@@ -67,12 +70,35 @@ class DataImportService {
               ? DateTime.parse(courseMap['updatedAt'] as String)
               : null,
           isActive: courseMap['isActive'] as bool? ?? true,
+          semesterId: courseMap['semesterId'] as String?,
         ));
       } catch (e) {
         debugPrint('Error parsing course: $e');
       }
     }
     return courses;
+  }
+
+  static Future<List<Semester>> _parseSemesters(List? semestersData) async {
+    if (semestersData == null) return [];
+    final semesters = <Semester>[];
+    for (final item in semestersData) {
+      try {
+        final map = item as Map<String, dynamic>;
+        semesters.add(Semester(
+          id: map['id'] as String,
+          name: map['name'] as String,
+          createdAt: DateTime.parse(map['createdAt'] as String),
+          startDate: map['startDate'] != null ? DateTime.parse(map['startDate'] as String) : null,
+          endDate: map['endDate'] != null ? DateTime.parse(map['endDate'] as String) : null,
+          isArchived: map['isArchived'] as bool? ?? false,
+          updatedAt: map['updatedAt'] != null ? DateTime.parse(map['updatedAt'] as String) : null,
+        ));
+      } catch (e) {
+        debugPrint('Error parsing semester: $e');
+      }
+    }
+    return semesters;
   }
 
   /// Parsear horarios
@@ -179,8 +205,8 @@ class DataImportService {
           type: GradeType.values.firstWhere(
             (e) => e.name == gradeMap['type'],
           ),
-          score: (gradeMap['score'] as num).toDouble(),
-          maxScore: (gradeMap['maxScore'] as num).toDouble(),
+          score: gradeMap['score'] != null ? (gradeMap['score'] as num).toDouble() : null,
+          maxScore: gradeMap['maxScore'] != null ? (gradeMap['maxScore'] as num).toDouble() : null,
           weight: (gradeMap['weight'] as num).toDouble(),
           date: DateTime.parse(gradeMap['date'] as String),
           notes: gradeMap['notes'] as String?,
@@ -211,6 +237,7 @@ class DataImportService {
         showSaturday: settingsData['showSaturday'] as bool? ?? false,
         showSunday: settingsData['showSunday'] as bool? ?? false,
         userName: settingsData['userName'] as String?,
+        activeSemesterId: settingsData['activeSemesterId'] as String?,
         lastUpdated: settingsData['lastUpdated'] != null
             ? DateTime.parse(settingsData['lastUpdated'] as String)
             : null,
@@ -227,6 +254,7 @@ class ImportResult {
   final bool success;
   final String? error;
   final List<Course> courses;
+  final List<Semester> semesters;
   final List<ClassSchedule> schedules;
   final List<Evaluation> evaluations;
   final List<Grade> grades;
@@ -237,6 +265,7 @@ class ImportResult {
     required this.success,
     this.error,
     this.courses = const [],
+    this.semesters = const [],
     this.schedules = const [],
     this.evaluations = const [],
     this.grades = const [],
@@ -246,6 +275,7 @@ class ImportResult {
 
   factory ImportResult.success({
     required List<Course> courses,
+    List<Semester> semesters = const [],
     required List<ClassSchedule> schedules,
     required List<Evaluation> evaluations,
     required List<Grade> grades,
@@ -255,6 +285,7 @@ class ImportResult {
     return ImportResult._(
       success: true,
       courses: courses,
+      semesters: semesters,
       schedules: schedules,
       evaluations: evaluations,
       grades: grades,
@@ -271,5 +302,5 @@ class ImportResult {
   }
 
   int get totalItems =>
-      courses.length + schedules.length + evaluations.length + grades.length;
+      courses.length + semesters.length + schedules.length + evaluations.length + grades.length;
 }

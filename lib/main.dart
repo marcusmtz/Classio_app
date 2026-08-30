@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_strings.dart';
+import 'core/navigation/app_navigator.dart';
 import 'data/local/hive_service.dart';
 import 'core/services/notification_service.dart';
 import 'presentation/providers/app_settings_provider.dart';
@@ -60,9 +61,10 @@ class _ClassioAppState extends ConsumerState<ClassioApp>
     // Agregar observer para detectar cambios en el ciclo de vida de la app
     WidgetsBinding.instance.addObserver(this);
 
-    // Inicializar notificaciones inteligentes después de que el widget esté montado
+    // Inicializar notificaciones inteligentes y deep-link después de que el widget esté montado
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeSmartNotifications();
+      _setupNotificationDeepLink();
     });
   }
 
@@ -98,6 +100,22 @@ class _ClassioAppState extends ConsumerState<ClassioApp>
     } catch (_) {
       // No bloquear la app si falla la inicialización de notificaciones
     }
+  }
+
+  void _setupNotificationDeepLink() {
+    final notificationService = NotificationService();
+    // Clicks en foreground/background
+    notificationService.onNotificationClick.listen((payload) {
+      if (!mounted) return;
+      AppNavigator.handleNotificationPayload(payload);
+    });
+    // Click que abrió la app desde terminated
+    Future.delayed(const Duration(milliseconds: 800), () async {
+      final initialPayload = await notificationService.getInitialPayload();
+      if (initialPayload != null && mounted) {
+        await AppNavigator.handleNotificationPayload(initialPayload);
+      }
+    });
   }
 
   @override
@@ -136,6 +154,7 @@ class _ClassioAppState extends ConsumerState<ClassioApp>
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
+      navigatorKey: AppNavigator.navigatorKey,
       home: homeScreen,
     );
   }

@@ -32,20 +32,22 @@ class _GradeFormScreenState extends ConsumerState<GradeFormScreen> {
   late TextEditingController _notesController;
   late GradeType _selectedType;
   late DateTime _selectedDate;
+  late bool _hasScore;
 
   @override
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.grade?.title ?? '');
     _scoreController =
-        TextEditingController(text: widget.grade?.score.toString() ?? '');
+        TextEditingController(text: widget.grade?.score?.toString() ?? '');
     _maxScoreController =
-        TextEditingController(text: widget.grade?.maxScore.toString() ?? '');
+        TextEditingController(text: widget.grade?.maxScore?.toString() ?? '');
     _weightController =
         TextEditingController(text: widget.grade?.weight.toString() ?? '');
     _notesController = TextEditingController(text: widget.grade?.notes ?? '');
     _selectedType = widget.grade?.type ?? GradeType.exam;
     _selectedDate = widget.grade?.date ?? DateTime.now();
+    _hasScore = widget.grade?.score != null;
   }
 
   @override
@@ -165,67 +167,86 @@ class _GradeFormScreenState extends ConsumerState<GradeFormScreen> {
             ),
             const SizedBox(height: AppSizes.spacing16),
 
-            // Score and Max Score
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _scoreController,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(
-                      labelText: 'Nota Obtenida',
-                      hintText: settings.gradeMaxValue.toStringAsFixed(1),
-                      prefixIcon: const Icon(Iconsax.star),
-                      helperText:
-                          '${settings.gradeMinValue.toStringAsFixed(1)} - ${settings.gradeMaxValue.toStringAsFixed(1)}',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Requerido';
-                      }
-                      final score = double.tryParse(value);
-                      if (score == null) {
-                        return 'Número inválido';
-                      }
-                      if (score < settings.gradeMinValue ||
-                          score > settings.gradeMaxValue) {
-                        return 'Fuera de rango';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-                const SizedBox(width: AppSizes.spacing12),
-                Expanded(
-                  child: TextFormField(
-                    controller: _maxScoreController,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(
-                      labelText: 'Nota Máxima',
-                      hintText: settings.gradeMaxValue.toStringAsFixed(1),
-                      prefixIcon: const Icon(Iconsax.star_1),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Requerido';
-                      }
-                      final maxScore = double.tryParse(value);
-                      if (maxScore == null || maxScore <= 0) {
-                        return 'Inválido';
-                      }
-                      if (maxScore < settings.gradeMinValue ||
-                          maxScore > settings.gradeMaxValue) {
-                        return 'Fuera de rango';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-              ],
+            // Has Score toggle
+            SwitchListTile(
+              title: const Text('Ya tengo la nota'),
+              subtitle: Text(_hasScore ? 'Ingresa nota obtenida y máxima' : 'Solo planificar evaluación (pendiente)'),
+              value: _hasScore,
+              onChanged: (v) => setState(() {
+                _hasScore = v;
+                if (!v) {
+                  _scoreController.clear();
+                  _maxScoreController.clear();
+                }
+              }),
+              secondary: Icon(_hasScore ? Iconsax.tick_circle : Iconsax.clock, color: _hasScore ? AppColors.success : AppColors.warning),
             ),
-            const SizedBox(height: AppSizes.spacing16),
+            const SizedBox(height: AppSizes.spacing8),
+
+            // Score and Max Score (only if hasScore)
+            if (_hasScore)
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _scoreController,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      decoration: InputDecoration(
+                        labelText: 'Nota Obtenida',
+                        hintText: settings.gradeMaxValue.toStringAsFixed(1),
+                        prefixIcon: const Icon(Iconsax.star),
+                        helperText:
+                            '${settings.gradeMinValue.toStringAsFixed(1)} - ${settings.gradeMaxValue.toStringAsFixed(1)}',
+                      ),
+                      validator: (value) {
+                        if (!_hasScore) return null;
+                        if (value == null || value.isEmpty) {
+                          return 'Requerido';
+                        }
+                        final score = double.tryParse(value);
+                        if (score == null) {
+                          return 'Número inválido';
+                        }
+                        if (score < settings.gradeMinValue ||
+                            score > settings.gradeMaxValue) {
+                          return 'Fuera de rango';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: AppSizes.spacing12),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _maxScoreController,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      decoration: InputDecoration(
+                        labelText: 'Nota Máxima',
+                        hintText: settings.gradeMaxValue.toStringAsFixed(1),
+                        prefixIcon: const Icon(Iconsax.star_1),
+                      ),
+                      validator: (value) {
+                        if (!_hasScore) return null;
+                        if (value == null || value.isEmpty) {
+                          return 'Requerido';
+                        }
+                        final maxScore = double.tryParse(value);
+                        if (maxScore == null || maxScore <= 0) {
+                          return 'Inválido';
+                        }
+                        if (maxScore < settings.gradeMinValue ||
+                            maxScore > settings.gradeMaxValue) {
+                          return 'Fuera de rango';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            if (_hasScore) const SizedBox(height: AppSizes.spacing16),
 
             // Weight
             TextFormField(
@@ -301,6 +322,29 @@ class _GradeFormScreenState extends ConsumerState<GradeFormScreen> {
   }
 
   Widget _buildPreview(BuildContext context) {
+    if (!_hasScore) {
+      final weight = double.tryParse(_weightController.text) ?? 0.0;
+      return Container(
+        padding: const EdgeInsets.all(AppSizes.spacing16),
+        decoration: BoxDecoration(
+          color: AppColors.warning.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+          border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Iconsax.clock, color: AppColors.warning),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Evaluación pendiente: ${weight.toStringAsFixed(1)}% del promedio. Agrega la nota cuando la tengas.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.warning),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     final score = double.tryParse(_scoreController.text) ?? 0.0;
     final maxScore = double.tryParse(_maxScoreController.text) ?? 7.0;
     final percentage = maxScore > 0 ? (score / maxScore) * 100.0 : 0.0;
@@ -396,22 +440,40 @@ class _GradeFormScreenState extends ConsumerState<GradeFormScreen> {
   Future<void> _saveGrade() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final score = double.parse(_scoreController.text);
-    final maxScore = double.parse(_maxScoreController.text);
     final weight = double.parse(_weightController.text);
+    double? score;
+    double? maxScore;
+    if (_hasScore) {
+      score = double.parse(_scoreController.text);
+      maxScore = double.parse(_maxScoreController.text);
+    }
 
     try {
       if (widget.grade != null) {
         // Update
-        final updatedGrade = widget.grade!.copyWith(
-          title: _titleController.text,
-          score: score,
-          maxScore: maxScore,
-          weight: weight,
-          type: _selectedType,
-          date: _selectedDate,
-          notes: _notesController.text.isEmpty ? null : _notesController.text,
-        );
+        Grade updatedGrade;
+        if (_hasScore) {
+          updatedGrade = widget.grade!.copyWith(
+            title: _titleController.text,
+            score: score,
+            maxScore: maxScore,
+            weight: weight,
+            type: _selectedType,
+            date: _selectedDate,
+            notes: _notesController.text.isEmpty ? null : _notesController.text,
+          );
+        } else {
+          // Pending: clear scores
+          updatedGrade = widget.grade!
+              .copyWith(
+                title: _titleController.text,
+                weight: weight,
+                type: _selectedType,
+                date: _selectedDate,
+                notes: _notesController.text.isEmpty ? null : _notesController.text,
+              )
+              .copyWithNullableScore(score: null, maxScore: null);
+        }
         await ref.read(gradesProvider.notifier).updateGrade(updatedGrade);
       } else {
         // Add

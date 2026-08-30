@@ -20,8 +20,8 @@ final scheduleProvider =
   return ScheduleNotifier(
     ref.read(scheduleRepositoryProvider),
     ref.read(validateScheduleUseCaseProvider),
-    ref.read(scheduleNotificationServiceProvider),
-    ref,
+    notificationService: ref.read(scheduleNotificationServiceProvider),
+    ref: ref,
   );
 });
 
@@ -35,19 +35,21 @@ final scheduleByDayProvider =
 class ScheduleNotifier extends StateNotifier<List<ClassSchedule>> {
   final ClassScheduleRepository _repository;
   final ValidateScheduleUseCase _validateScheduleUseCase;
-  final NotificationService _notificationService;
-  final Ref _ref;
+  final NotificationService? _notificationService;
+  final Ref? _ref;
   final DateTime Function() _nowProvider;
   final _uuid = const Uuid();
   StreamSubscription? _scheduleSubscription;
 
   ScheduleNotifier(
     this._repository,
-    this._validateScheduleUseCase,
-    this._notificationService,
-    this._ref, {
+    this._validateScheduleUseCase, {
+    NotificationService? notificationService,
+    Ref? ref,
     DateTime Function()? nowProvider,
-  })  : _nowProvider = nowProvider ?? DateTime.now,
+  })  : _notificationService = notificationService,
+        _ref = ref,
+        _nowProvider = nowProvider ?? DateTime.now,
         super([]) {
     _loadSchedules();
     _scheduleSubscription = _repository.watch().listen((_) {
@@ -121,7 +123,7 @@ class ScheduleNotifier extends StateNotifier<List<ClassSchedule>> {
 
   Future<void> deleteSchedule(String id) async {
     await _repository.delete(id);
-    await _notificationService.cancelClassReminder(id);
+    await _notificationService?.cancelClassReminder(id);
     _loadSchedules();
   }
 
@@ -210,22 +212,23 @@ class ScheduleNotifier extends StateNotifier<List<ClassSchedule>> {
 
   Future<void> _handleNotificationsForSchedule(ClassSchedule schedule) async {
     try {
-      final settings = _ref.read(appSettingsProvider);
+      if (_ref == null || _notificationService == null) return;
+      final settings = _ref!.read(appSettingsProvider);
       if (!settings.notificationsEnabled || !settings.classReminderEnabled) {
-        await _notificationService.cancelClassReminder(schedule.id);
+        await _notificationService!.cancelClassReminder(schedule.id);
         return;
       }
 
-      final course = _ref.read(coursesProvider.notifier).getCourseById(
+      final course = _ref!.read(coursesProvider.notifier).getCourseById(
             schedule.courseId,
           );
 
       if (course == null) {
-        await _notificationService.cancelClassReminder(schedule.id);
+        await _notificationService!.cancelClassReminder(schedule.id);
         return;
       }
 
-      await _notificationService.scheduleClassReminder(
+      await _notificationService!.scheduleClassReminder(
         schedule: schedule,
         courseName: course.name,
         courseCode: course.code,

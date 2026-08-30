@@ -128,4 +128,11 @@ class AppSettingsRepository {
       lastUpdated: DateTime.now(),
     ));
   }
+
+  Future<void> updateActiveSemesterId(String? semesterId) async {
+    final settings = getSettings();
+    await saveSettings(settings.copyWithNullableActiveSemester(semesterId).copyWith(
+      lastUpdated: DateTime.now(),
+    ));
+  }
 }

@@ -10,6 +10,7 @@ import 'package:classio_app/data/models/class_schedule_model.dart';
 import 'package:classio_app/data/models/course_model.dart';
 import 'package:classio_app/data/models/evaluation_model.dart' as eval_model;
 import 'package:classio_app/data/models/grade_model.dart';
+import 'package:classio_app/data/models/semester_model.dart';
 import 'package:classio_app/data/models/user_settings_model.dart';
 import 'package:classio_app/data/repositories/class_schedule_repository.dart';
 import 'package:classio_app/data/repositories/course_repository.dart';
@@ -50,6 +51,9 @@ Future<Directory> _initHiveForCourseTests() async {
   if (!Hive.isAdapterRegistered(12)) {
     Hive.registerAdapter(AppSettingsAdapter());
   }
+  if (!Hive.isAdapterRegistered(13)) {
+    Hive.registerAdapter(SemesterAdapter());
+  }
 
   if (!Hive.isBoxOpen(HiveService.coursesBox)) {
     await Hive.openBox<Course>(HiveService.coursesBox);
@@ -62,6 +66,9 @@ Future<Directory> _initHiveForCourseTests() async {
   }
   if (!Hive.isBoxOpen(HiveService.gradesBox)) {
     await Hive.openBox<Grade>(HiveService.gradesBox);
+  }
+  if (!Hive.isBoxOpen(HiveService.semestersBox)) {
+    await Hive.openBox<Semester>(HiveService.semestersBox);
   }
 
   return tempDir;
@@ -146,6 +153,13 @@ void main() {
       );
 
       await notifier.deleteCourse(courseId);
+      // Staged delete: state hides but repo still has until commit
+      expect(notifier.getCourseById(courseId), isNull);
+      expect(courseRepository.getById(courseId), isNotNull);
+      // Commit the pending delete (5s undo window)
+      await notifier.commitPendingDeletes();
+      // Give microtask for commit
+      await Future.delayed(const Duration(milliseconds: 50));
 
       expect(courseRepository.getById(courseId), isNull);
       expect(scheduleRepository.getByCourse(courseId), isEmpty);

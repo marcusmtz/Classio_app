@@ -17,8 +17,10 @@ import '../../providers/courses_provider.dart';
 import '../../providers/evaluations_provider.dart';
 import '../../providers/grades_provider.dart';
 import '../../providers/schedule_provider.dart';
+import '../../providers/semester_provider.dart';
 import 'notifications_settings_screen.dart';
 import 'widget_settings_screen.dart';
+import '../semesters/semesters_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -195,6 +197,38 @@ class SettingsScreen extends ConsumerWidget {
                 MaterialPageRoute(
                   builder: (context) => const WidgetSettingsScreen(),
                 ),
+              );
+            },
+          ),
+
+          ListTile(
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Iconsax.calendar_1, color: AppColors.primary),
+            ),
+            title: const Text('Periodos Académicos'),
+            subtitle: Consumer(
+              builder: (context, ref, _) {
+                final activeId = ref.watch(appSettingsProvider).activeSemesterId;
+                if (activeId == null) return const Text('Todos los periodos');
+                final sem = ref.watch(semestersProvider);
+                try {
+                  final found = sem.firstWhere((s) => s.id == activeId);
+                  return Text(found.name);
+                } catch (_) {
+                  return const Text('Todos los periodos');
+                }
+              },
+            ),
+            trailing: const Icon(Iconsax.arrow_right_3),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SemestersScreen()),
               );
             },
           ),
@@ -921,7 +955,7 @@ class SettingsScreen extends ConsumerWidget {
     final exportMap = {
       'generatedAt': DateTime.now().toIso8601String(),
       'app': AppStrings.appName,
-      'version': '1.0.0',
+      'version': '1.1.0',
       'courses': ref.read(coursesProvider).map((course) {
         return {
           'id': course.id,
@@ -931,6 +965,18 @@ class SettingsScreen extends ConsumerWidget {
           'createdAt': course.createdAt.toIso8601String(),
           'updatedAt': course.updatedAt?.toIso8601String(),
           'isActive': course.isActive,
+          'semesterId': course.semesterId,
+        };
+      }).toList(),
+      'semesters': ref.read(semestersProvider).map((s) {
+        return {
+          'id': s.id,
+          'name': s.name,
+          'createdAt': s.createdAt.toIso8601String(),
+          'startDate': s.startDate?.toIso8601String(),
+          'endDate': s.endDate?.toIso8601String(),
+          'isArchived': s.isArchived,
+          'updatedAt': s.updatedAt?.toIso8601String(),
         };
       }).toList(),
       'schedule': ref.read(scheduleProvider).map((schedule) {
@@ -997,6 +1043,7 @@ class SettingsScreen extends ConsumerWidget {
         'language': ref.read(appSettingsProvider).language,
         'showSaturday': ref.read(appSettingsProvider).showSaturday,
         'showSunday': ref.read(appSettingsProvider).showSunday,
+        'activeSemesterId': ref.read(appSettingsProvider).activeSemesterId,
         'lastUpdated':
             ref.read(appSettingsProvider).lastUpdated?.toIso8601String(),
       },
@@ -1453,6 +1500,13 @@ class SettingsScreen extends ConsumerWidget {
                                     'Cursos',
                                     result.courses.length,
                                   ),
+                                  if (result.semesters.isNotEmpty)
+                                    _buildImportSummaryItem(
+                                      context,
+                                      Iconsax.calendar_1,
+                                      'Periodos',
+                                      result.semesters.length,
+                                    ),
                                   _buildImportSummaryItem(
                                     context,
                                     Iconsax.calendar,
@@ -1618,6 +1672,12 @@ class SettingsScreen extends ConsumerWidget {
     // 1. Limpiar datos actuales
     await HiveService.clearAll();
 
+    // 1b. Importar periodos primero (para que los cursos referencien)
+    final semesterRepo = ref.read(semesterRepositoryProvider);
+    for (final s in result.semesters) {
+      await semesterRepo.add(s);
+    }
+
     // 2. Importar cursos directamente al repositorio (preservando IDs originales)
     final courseRepo = ref.read(courseRepositoryProvider);
     for (final course in result.courses) {
@@ -1661,6 +1721,13 @@ class SettingsScreen extends ConsumerWidget {
         await ref
             .read(appSettingsProvider.notifier)
             .updateUserName(settings.userName!);
+      }
+      if (settings.activeSemesterId != null) {
+        // Solo si existe el periodo importado
+        final exists = result.semesters.any((s) => s.id == settings.activeSemesterId);
+        if (exists) {
+          await ref.read(appSettingsProvider.notifier).updateActiveSemesterId(settings.activeSemesterId);
+        }
       }
     }
 
